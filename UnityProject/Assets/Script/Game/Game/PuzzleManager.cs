@@ -9,7 +9,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 		Move,
 		Check
 	};
-	
+
 	private GameObject[] 	puzzles;
 	private STATE 			state = STATE.Select;
 	private	int				maxpuzzles;
@@ -22,29 +22,30 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	public	GameObject		puzzlePrefab;
 	public	Material[]		puzzleColor;
 	
-	
-	// Use this for initialization
+	#region Use this for initialization
 	void Start () {
 		maxpuzzles = maxLines * maxColumns;
 		puzzles = new GameObject[maxpuzzles];
-		for(int i = 0;i < maxpuzzles;i++)
+		for(int puzzleNo = 0;puzzleNo < maxpuzzles;puzzleNo++)
 		{
 		// Create puzzle & Set position.
-			Vector3 puzzlePos = Vector3.zero;
-			puzzlePos.x = ((i % maxColumns) - (maxLines / 2) - 1) * puzzleSpace;
-			puzzlePos.z = ((i / maxColumns) - (maxLines / 2)) * puzzleSpace;
-			puzzles[i] = Instantiate(puzzlePrefab,puzzlePos,Quaternion.identity) as GameObject;
+			puzzles[puzzleNo] = Instantiate(puzzlePrefab,CalcPuzzlePosition(puzzleNo),Quaternion.identity) as GameObject;
 		// Set the color to random.
-			puzzles[i].GetComponent<Puzzle>().SetColor(puzzleColor[Random.Range(0,puzzleColor.Length)]);
+			int colorIdx = Random.Range(0,puzzleColor.Length);
+			puzzles[puzzleNo].GetComponent<Puzzle>().SetColor(colorIdx,puzzleColor[colorIdx]);
 		// Set puzzle ID
-			puzzles[i].GetComponent<Puzzle>().SetID(i);
+			puzzles[puzzleNo].GetComponent<Puzzle>().ID = puzzleNo;
 		// Set puzzle Name
-			puzzles[i].name = "Puzzle" + i.ToString();
+			puzzles[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
+		// Set using
+			puzzles[puzzleNo].GetComponent<Puzzle>().used = true;
 		}
 	}
-	
-	// Update is called once per frame
+	#endregion
+
+	#region Update is called once per frame
 	void Update () {
+		// Debug
 		if(Input.GetKeyDown(KeyCode.A))
 			SortPuzzle();
 
@@ -60,19 +61,19 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			break;
 
 		case STATE.Check:
-			print ("Check out !");
 			SortPuzzle();
 			state = STATE.Select;
 			break;
 		};
 	}
-	
-	// Puzzle check you have selected.
+	#endregion
+
+	#region Puzzle check you have selected.
 	void CheckSelecting(STATE nextState)
 	{
 		for(int puzzleNo = 0; puzzleNo < maxpuzzles;puzzleNo++)
 		{
-			if(puzzles[puzzleNo].GetComponent<Puzzle>().CheckSelecting())
+			if(puzzles[puzzleNo].GetComponent<Puzzle>().selected)
 			{
 				state = nextState;
 				selectedPazzleNo = puzzleNo;
@@ -80,78 +81,176 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			}
 		}
 	}
+	#endregion
 
-	// Puzzle check you have selected.
+	#region Puzzle check you have NOT selected.
 	void CheckNotSelecting(STATE nextState)
 	{
 		for(int puzzleNo = 0; puzzleNo < maxpuzzles;puzzleNo++)
 		{
-			if(puzzles[puzzleNo].GetComponent<Puzzle>().CheckSelecting())
+			if(puzzles[puzzleNo].GetComponent<Puzzle>().selected)
 				return;
 		}
 		state = nextState;
 	}
-
-
-	// Sort automatically puzzle
+	#endregion
+	
+	#region Sort automatically puzzle
 	void SortPuzzle()
 	{
-		for(int i = 0; i < maxpuzzles;i++)
+		// Rearranged in ascending order of ID puzzles
+		PuzzleQuickSort(0,maxpuzzles - 1);
+		// Puzzle number that is not in use is through
+		for(int puzzleNo = maxpuzzles - 1; puzzleNo >= 0;puzzleNo--)
 		{
 			Vector3 puzzlePos = Vector3.zero;
-			int id = puzzles[i].GetComponent<Puzzle>().GetID();
-			puzzlePos.x = ((id % maxColumns) - (maxLines / 2) - 1) * puzzleSpace;
-			puzzlePos.z = ((id / maxColumns) - (maxLines / 2)) * puzzleSpace;
+			Puzzle targetPuzzle = puzzles[puzzleNo].GetComponent<Puzzle>();
+			bool existEmpty = false;
+			Puzzle emptyPuzzle; 
+			GameObject emptyTemp;
 
-			puzzles[i].GetComponent<Puzzle>().MoveAmountClear();
+			//			print("targetPuzzle" + puzzleNo.ToString() + " " + targetPuzzle.ID.ToString());
+			// Sort Puzzle ID 
+			if(targetPuzzle.ID / maxColumns < maxLines - 1)
+			{
 
-//			puzzles[i].transform.position = puzzlePos;
-			iTween.MoveTo(puzzles[i],iTween.Hash("position",puzzlePos,"time",0.1f));
+				for(int id = targetPuzzle.ID + maxColumns;id < maxpuzzles;id += maxColumns)
+				{
+					emptyTemp = puzzles[SearchPuzzleNo(id)];
+					emptyPuzzle = emptyTemp.GetComponent<Puzzle>();
+					if(emptyPuzzle.used == false)
+					{
+						emptyPuzzle.ID = targetPuzzle.ID;
+						targetPuzzle.ID = id;
+						emptyPuzzle.MoveAmountClear();
+						emptyTemp.transform.position = CalcPuzzlePosition(emptyPuzzle.ID);
+						emptyTemp.renderer.enabled = false;
+					}
+				}
+			}
+			// Set Position
+			targetPuzzle.MoveAmountClear();
+			iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",0.1f));
+
+//			puzzles[puzzleNo].renderer.material.color.SetAlpha(255);
 		}
 	}
+	#endregion
 
-	// Move Puzzles
+	#region Move Puzzles
 	void Move()
 	{
 		Vector3 moveAmount;
 		Puzzle selectedPazzle = puzzles[selectedPazzleNo].GetComponent<Puzzle>();
-		moveAmount = selectedPazzle.GetMoveAmount();
+		moveAmount = selectedPazzle.moveAmount;
+
+		// Debug 
+		if(moveAmount.x / puzzleSpace >= 2 && moveAmount.z / puzzleSpace >= 2)
+			print("move 2 over!!");
+
+		// Move diagonal
+		if(moveAmount.x >= puzzleSpace && moveAmount.z >= puzzleSpace)
+			ChangeID(selectedPazzle.ID + 1 + maxColumns);
+		else if(moveAmount.x >= puzzleSpace && moveAmount.z <= -puzzleSpace)
+			ChangeID(selectedPazzle.ID + 1 - maxColumns);
+		else if(moveAmount.x <= -puzzleSpace && moveAmount.z >= puzzleSpace)
+			ChangeID(selectedPazzle.ID - 1 + maxColumns);
+		else if(moveAmount.x <= -puzzleSpace && moveAmount.z <= -puzzleSpace)
+			ChangeID(selectedPazzle.ID - 1 - maxColumns);
 		// Move right.
-		if(moveAmount.x >= puzzleSpace)
-			ChangeID(selectedPazzle.GetID() + 1);
+		else if(moveAmount.x >= puzzleSpace)
+			ChangeID(selectedPazzle.ID + 1);
 		// Move left.
 		else if(moveAmount.x <= -puzzleSpace)
-			ChangeID(selectedPazzle.GetID() - 1);
+			ChangeID(selectedPazzle.ID - 1);
 		// Move up.
 		else if(moveAmount.z >= puzzleSpace)
-			ChangeID(selectedPazzle.GetID() + maxColumns);
+			ChangeID(selectedPazzle.ID + maxColumns);
 		// Move down.
 		else if(moveAmount.z <= -puzzleSpace)
-			ChangeID(selectedPazzle.GetID() - maxColumns);
-
+			ChangeID(selectedPazzle.ID - maxColumns);
 	}	
+	#endregion
 
-
-	// Change ID
+	#region Change ID
 	void ChangeID(int targetID)
 	{
 		Puzzle selectedPazzle = puzzles[selectedPazzleNo].GetComponent<Puzzle>();
-		int tempID = selectedPazzle.GetID();
-		selectedPazzle.MoveAmountClear();
-		puzzles[SearchPuzzleNo(targetID)].GetComponent<Puzzle>().SetID(tempID);
-		selectedPazzle.SetID(targetID);
+		int tempID = selectedPazzle.ID;
+		Vector3 amount = 	puzzles[SearchPuzzleNo(targetID)].transform.position - 
+							selectedPazzle.transform.position;
+		if( amount.x < puzzleSpace && amount.x > -puzzleSpace &&
+		    amount.z < puzzleSpace && amount.z > -puzzleSpace )
+		{
+			selectedPazzle.MoveAmountClear();
+			puzzles[SearchPuzzleNo(targetID)].GetComponent<Puzzle>().ID = tempID;
+			selectedPazzle.ID = targetID;
 
-		SortPuzzle();
+			SortPuzzle();
+		}
 	}
+	#endregion
 
-	// Search pazzle number from ID
+	#region Search pazzle number from ID
 	int SearchPuzzleNo(int id)
 	{
 		for(int puzzleNo = 0; puzzleNo < maxpuzzles;puzzleNo++)
 		{
-			if(puzzles[puzzleNo].GetComponent<Puzzle>().GetID() == id)
+			if(puzzles[puzzleNo].GetComponent<Puzzle>().ID == id)
 				return puzzleNo;
 		}
 		return 0;
+	}        
+	#endregion
+
+	#region Matching Puzzles
+	void MatchingPuzzle()
+	{
+		for(int puzzleNo = maxpuzzles - 1; puzzleNo > 0;puzzleNo--)
+		{
+
+		}
+
 	}
+	#endregion
+
+	#region Sort Puzzles by QuickSort
+	void PuzzleQuickSort(int start, int end)
+	{
+		int i 		= start;
+		int j 		= end;		
+		int pivot	= puzzles[(start + end) / 2].GetComponent<Puzzle>().ID;
+		while(true) 
+		{
+			while(puzzles[i].GetComponent<Puzzle>().ID < pivot)
+				i++;
+			while(pivot < puzzles[j].GetComponent<Puzzle>().ID)
+				j--;
+			if (puzzles[i].GetComponent<Puzzle>().ID >= puzzles[j].GetComponent<Puzzle>().ID)
+				break;
+			
+			GameObject temp = puzzles[i];
+			puzzles[i] = puzzles[j];
+			puzzles[j] = temp;
+			i++;
+			j--;
+		}
+
+		if (start < i - 1)
+			PuzzleQuickSort(start, i - 1);
+		if (j + 1 <  end)
+			PuzzleQuickSort(j + 1, end);
+	}
+	#endregion
+
+	#region Calc Puzzle Position from ID
+	Vector3 CalcPuzzlePosition(int id)
+	{
+		Vector3 puzzlePos;
+		puzzlePos.x = ((id % maxColumns) - (maxLines / 2) - 1) * puzzleSpace;
+		puzzlePos.y = 0;
+		puzzlePos.z = ((id / maxColumns) - (maxLines / 2)) * puzzleSpace;
+		return puzzlePos;
+	}
+	#endregion
 }

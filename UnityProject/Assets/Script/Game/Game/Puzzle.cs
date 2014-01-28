@@ -2,15 +2,18 @@
 using System.Collections;
 
 public class Puzzle : MonoBehaviour {
-	private bool 		bSelected = false; 
+	public	int 		ID			= 999;
+	public bool 		selected	= false;
+	public bool			used		= false;
+	private int 		colorNo		= 999;
+
 	private Vector3 	screenPoint;
     private Vector3 	offset;
 
 	private Vector3 	oldPos;
-	private Vector3 	moveAmount;
-	
-	private	int 		ID = 999;
-	
+
+	public Vector3 		moveAmount;	
+
 	// Use this for initialization
 	void Start () {
 	
@@ -20,51 +23,47 @@ public class Puzzle : MonoBehaviour {
 	void Update () {
  
 	}
-	
+
+	# region Mouse Action
     void OnMouseDown() {
        	this.screenPoint = Camera.main.WorldToScreenPoint(transform.position);
-        this.offset = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+        this.offset = transform.position - 
+			Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
 		oldPos = transform.position;
-//		bSelected = true;
-		print ("Selected Puzzle ID " + ID.ToString());
+//		selected = true;
     }
 
     void OnMouseUp() {
-		bSelected = false;
+		selected = false;
     }
 
 	void OnMouseDrag() {
     	Vector3 currentScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
         Vector3 currentPosition = Camera.main.ScreenToWorldPoint(currentScreenPoint) + this.offset;
        	transform.position = currentPosition;
-		bSelected = true;
+		selected = true;
 		moveAmount = currentPosition - oldPos;
-		bSelected = true;
-	}
-	
-	public void SetColor(Material mat)
-	{
-		this.renderer.material = mat;
-	}
-	
-	public bool CheckSelecting()
-	{
-		return bSelected;
-	}
-	
-	public void SetID(int id)
-	{
-		ID = id;
-	}
+		selected = true;
 
-	public int GetID()
-	{
-		return ID;
+		#region Debug
+		if(Input.GetKeyDown(KeyCode.Space))
+		{
+			used = used ^ true;
+			print ("Puzzle Used " + used.ToString());
+		}
+		if(Input.GetKeyDown(KeyCode.S))
+		{
+			print ("Selected Puzzle ID " + ID.ToString());
+		}
+		#endregion
 	}
-	
-	public Vector3 GetMoveAmount()
+	#endregion
+
+
+	public void SetColor(int colorIdx,Material mat)
 	{
-		return moveAmount;
+		colorNo = colorIdx;
+		this.renderer.material = mat;
 	}
 
 	public void MoveAmountClear()
@@ -72,4 +71,6 @@ public class Puzzle : MonoBehaviour {
 		oldPos = transform.position;
 		moveAmount = Vector3.zero;
 	}
+
+
 }
