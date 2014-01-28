@@ -43,7 +43,6 @@ public class Puzzle : MonoBehaviour {
        	transform.position = currentPosition;
 		selected = true;
 		moveAmount = currentPosition - oldPos;
-		selected = true;
 
 		#region Debug
 		if(Input.GetKeyDown(KeyCode.Space))
@@ -54,6 +53,7 @@ public class Puzzle : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.S))
 		{
 			print ("Selected Puzzle ID " + ID.ToString());
+			print ("moveAmount " + moveAmount.ToString());
 		}
 		#endregion
 	}
@@ -69,6 +69,11 @@ public class Puzzle : MonoBehaviour {
 	public void MoveAmountClear()
 	{
 		oldPos = transform.position;
+		moveAmount = Vector3.zero;
+	}
+	public void MoveAmountClear(Vector3 referencePos)
+	{
+		oldPos = referencePos;
 		moveAmount = Vector3.zero;
 	}
 
