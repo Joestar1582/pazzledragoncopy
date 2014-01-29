@@ -2,10 +2,10 @@
 using System.Collections;
 
 public class Puzzle : MonoBehaviour {
-	public	int 		ID			= 999;
-	public bool 		selected	= false;
-	public bool			used		= false;
-	private int 		colorNo		= 999;
+	public int 		ID			= 999;
+	public bool 	selected	= false;
+	public bool		used		= false;
+	public int 		colorNo		= 999;
 
 	private Vector3 	screenPoint;
     private Vector3 	offset;

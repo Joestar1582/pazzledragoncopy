@@ -11,9 +11,9 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	};
 
 	private GameObject[] 	puzzles;
-	private STATE 			state = STATE.Select;
+	private STATE 			state = STATE.Check;
 	private	int				maxpuzzles;
-	private	int				selectedPazzleNo = 0;
+	private	int				selectedPuzzleNo = 0;
 	
 	public  int 			maxLines 	= 5;
 	public  int 			maxColumns 	= 7;
@@ -21,7 +21,8 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	
 	public	GameObject		puzzlePrefab;
 	public	Material[]		puzzleColor;
-	
+	public	float			moveTime 	= 0.5f;
+
 	#region Use this for initialization
 	void Start () {
 		maxpuzzles = maxLines * maxColumns;
@@ -33,7 +34,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			puzzles[puzzleNo].GetComponent<Puzzle>().ID = puzzleNo;
 			puzzles[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
 			puzzles[puzzleNo].GetComponent<Puzzle>().used = true;
-
+			puzzles[puzzleNo].transform.parent = gameObject.transform;
 			// Set the color to random.
 			int colorIdx = Random.Range(0,puzzleColor.Length);
 			puzzles[puzzleNo].GetComponent<Puzzle>().SetColor(colorIdx,puzzleColor[colorIdx]);
@@ -49,11 +50,14 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			SortPuzzle();
 		if(Input.GetKeyDown(KeyCode.Z))
 			CreatePuzzle();
+		if(Input.GetKeyDown(KeyCode.Q))
+			MatchingPuzzle();
 
 		switch(state)
 		{
 		case STATE.Select:
 			CheckSelecting(STATE.Move);
+			SortPuzzle();
 			break;
 
 		case STATE.Move:
@@ -62,8 +66,15 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			break;
 
 		case STATE.Check:
-			SortPuzzle();
-			state = STATE.Select;
+			if(MatchingPuzzle() == false)
+			{
+				state = STATE.Select;
+			}
+			else
+			{
+				SortPuzzle();
+				CreatePuzzle();
+			}
 			break;
 		};
 	}
@@ -77,7 +88,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			if(puzzles[puzzleNo].GetComponent<Puzzle>().selected)
 			{
 				state = nextState;
-				selectedPazzleNo = puzzleNo;
+				selectedPuzzleNo = puzzleNo;
 				return;
 			}
 		}
@@ -127,7 +138,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			}
 			// Set Position
 			targetPuzzle.MoveAmountClear();
-			iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",0.1f));
+			iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",moveTime));
 		}
 	}
 	#endregion
@@ -136,50 +147,50 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	void Move()
 	{
 		Vector3 moveAmount;
-		Puzzle selectedPazzle = puzzles[selectedPazzleNo].GetComponent<Puzzle>();
-		moveAmount = selectedPazzle.moveAmount;
+		Puzzle selectedPuzzle = puzzles[selectedPuzzleNo].GetComponent<Puzzle>();
+		moveAmount = selectedPuzzle.moveAmount;
 
 		float recognitionRange = puzzleSpace / 1.2f;
 		float recognitionRangeDiagonal = puzzleSpace / 2.0f;
 
 		// Move diagonal
 		if(moveAmount.x >= recognitionRangeDiagonal && moveAmount.z >= recognitionRangeDiagonal)
-			ChangeID(selectedPazzle.ID + 1 + maxColumns);
+			ChangeID(selectedPuzzle.ID + 1 + maxColumns);
 		else if(moveAmount.x >= recognitionRangeDiagonal && moveAmount.z <= -recognitionRangeDiagonal)
-			ChangeID(selectedPazzle.ID + 1 - maxColumns);
+			ChangeID(selectedPuzzle.ID + 1 - maxColumns);
 		else if(moveAmount.x <= -recognitionRangeDiagonal && moveAmount.z >= recognitionRangeDiagonal)
-			ChangeID(selectedPazzle.ID - 1 + maxColumns);
+			ChangeID(selectedPuzzle.ID - 1 + maxColumns);
 		else if(moveAmount.x <= -recognitionRangeDiagonal && moveAmount.z <= -recognitionRangeDiagonal)
-			ChangeID(selectedPazzle.ID - 1 - maxColumns);
+			ChangeID(selectedPuzzle.ID - 1 - maxColumns);
 		// Move right.
 		else if(moveAmount.x >= recognitionRange)
-			ChangeID(selectedPazzle.ID + 1);
+			ChangeID(selectedPuzzle.ID + 1);
 		// Move left.
 		else if(moveAmount.x <= -recognitionRange)
-			ChangeID(selectedPazzle.ID - 1);
+			ChangeID(selectedPuzzle.ID - 1);
 		// Move up.
 		else if(moveAmount.z >= recognitionRange)
-			ChangeID(selectedPazzle.ID + maxColumns);
+			ChangeID(selectedPuzzle.ID + maxColumns);
 		// Move down.
 		else if(moveAmount.z <= -recognitionRange)
-			ChangeID(selectedPazzle.ID - maxColumns);
+			ChangeID(selectedPuzzle.ID - maxColumns);
 	}	
 	#endregion
 
 	#region Change ID
 	void ChangeID(int targetID)
 	{
-		Puzzle selectedPazzle = puzzles[selectedPazzleNo].GetComponent<Puzzle>();
-		int tempID = selectedPazzle.ID;
+		Puzzle selectedPuzzle = puzzles[selectedPuzzleNo].GetComponent<Puzzle>();
+		int tempID = selectedPuzzle.ID;
 		Vector3 amount = 	puzzles[SearchPuzzleNo(targetID)].transform.position - 
-							selectedPazzle.transform.position;
+							selectedPuzzle.transform.position;
 		if( amount.x < puzzleSpace && amount.x > -puzzleSpace &&
 		    amount.z < puzzleSpace && amount.z > -puzzleSpace )
 		{
 			int targetIdx = SearchPuzzleNo(targetID);
-			selectedPazzle.MoveAmountClear(CalcPuzzlePosition(targetID));
+			selectedPuzzle.MoveAmountClear(CalcPuzzlePosition(targetID));
 			puzzles[targetIdx].GetComponent<Puzzle>().ID = tempID;
-			selectedPazzle.ID = targetID;
+			selectedPuzzle.ID = targetID;
 			iTween.MoveTo(puzzles[targetIdx],iTween.Hash("position",CalcPuzzlePosition(tempID),"time",0.1f));
 
 		}
@@ -199,13 +210,74 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	#endregion
 
 	#region Matching Puzzles
-	void MatchingPuzzle()
+	bool MatchingPuzzle()
 	{
-		for(int puzzleNo = maxpuzzles - 1; puzzleNo > 0;puzzleNo--)
+		bool checkMatch = false;
+		for(int puzzleNo = 0; puzzleNo < maxpuzzles;puzzleNo++)
 		{
+			Puzzle targetPuzzle = puzzles[puzzleNo].GetComponent<Puzzle>();
+			int combo = 0;
+			GameObject nextPuzzleObj;
+			Puzzle nextPuzzle;
+
+			// Check Column
+			if(targetPuzzle.ID % maxColumns < maxColumns - 2 && targetPuzzle.used)
+			{
+				for(int i = 1;(i + targetPuzzle.ID) % maxColumns <= maxColumns - 1;i++,combo++)
+				{
+					nextPuzzleObj = puzzles[SearchPuzzleNo(i + targetPuzzle.ID)];
+					nextPuzzle = nextPuzzleObj.GetComponent<Puzzle>();
+					if(targetPuzzle.colorNo != nextPuzzle.colorNo)
+						break;
+				}
+				if(combo >= 2)
+				{
+//					print ("Puzzle" + targetPuzzle.ID.ToString() + " is " + (combo+1).ToString() + "combo in Column");
+					checkMatch = true;
+					targetPuzzle.used = false;
+					targetPuzzle.MoveAmountClear();
+					puzzles[puzzleNo].renderer.enabled = false;
+					for(int j = 1;j <= combo;j++)
+					{
+						nextPuzzleObj = puzzles[SearchPuzzleNo(targetPuzzle.ID + j)];
+						nextPuzzle = nextPuzzleObj.GetComponent<Puzzle>();
+						nextPuzzle.used = false;
+						nextPuzzle.MoveAmountClear();
+						nextPuzzleObj.renderer.enabled = false;
+					}
+				}
+			}
+			// Check Line
+			combo = 0;
+			if(targetPuzzle.ID / maxColumns < maxLines - 2 && targetPuzzle.used)
+			{
+				for(int i = maxColumns;(i + targetPuzzle.ID) / maxColumns <= maxLines - 1;i += maxColumns,combo++)
+				{
+					nextPuzzleObj = puzzles[SearchPuzzleNo(i + targetPuzzle.ID)];
+					nextPuzzle = nextPuzzleObj.GetComponent<Puzzle>();
+					if(targetPuzzle.colorNo != nextPuzzle.colorNo)
+						break;
+				}
+				if(combo >= 2)
+				{
+//					print ("Puzzle" + targetPuzzle.ID.ToString() + " is " + (combo+1).ToString() + "combo in Line");
+					checkMatch = true;
+					targetPuzzle.used = false;
+					targetPuzzle.MoveAmountClear();
+					puzzles[puzzleNo].renderer.enabled = false;
+					for(int j = 1;j <= combo;j++)
+					{
+						nextPuzzleObj = puzzles[SearchPuzzleNo(targetPuzzle.ID + j * maxColumns)];
+						nextPuzzle = nextPuzzleObj.GetComponent<Puzzle>();
+						nextPuzzle.used = false;
+						nextPuzzle.MoveAmountClear();
+						nextPuzzleObj.renderer.enabled = false;
+					}
+				}
+			}
 
 		}
-
+		return checkMatch;
 	}
 	#endregion
 
@@ -270,7 +342,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 				puzzlePos = CalcPuzzlePosition(targetPuzzle.ID);
 				puzzlePos.y -= puzzleSpace;
 				puzzles[puzzleNo].transform.position = puzzlePos;
-				iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",0.1f));
+				iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",moveTime));
 
 				// Set the color to random.
 				int colorIdx = Random.Range(0,puzzleColor.Length);
