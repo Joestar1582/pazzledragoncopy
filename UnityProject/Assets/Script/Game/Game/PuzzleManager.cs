@@ -191,8 +191,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			selectedPuzzle.MoveAmountClear(CalcPuzzlePosition(targetID));
 			puzzles[targetIdx].GetComponent<Puzzle>().ID = tempID;
 			selectedPuzzle.ID = targetID;
-			iTween.MoveTo(puzzles[targetIdx],iTween.Hash("position",CalcPuzzlePosition(tempID),"time",0.1f));
-
+			iTween.MoveTo(puzzles[targetIdx],iTween.Hash("position",CalcPuzzlePosition(tempID),"time",moveTime));
 		}
 	}
 	#endregion
@@ -221,7 +220,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			Puzzle nextPuzzle;
 
 			// Check Column
-			if(targetPuzzle.ID % maxColumns < maxColumns - 2 && targetPuzzle.used)
+			if(targetPuzzle.ID % maxColumns < maxColumns - 2)
 			{
 				for(int i = 1;(i + targetPuzzle.ID) % maxColumns <= maxColumns - 1;i++,combo++)
 				{
@@ -249,7 +248,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			}
 			// Check Line
 			combo = 0;
-			if(targetPuzzle.ID / maxColumns < maxLines - 2 && targetPuzzle.used)
+			if(targetPuzzle.ID / maxColumns < maxLines - 2)
 			{
 				for(int i = maxColumns;(i + targetPuzzle.ID) / maxColumns <= maxLines - 1;i += maxColumns,combo++)
 				{
