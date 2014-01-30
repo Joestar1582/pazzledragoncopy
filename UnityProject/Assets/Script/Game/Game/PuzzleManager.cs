@@ -17,7 +17,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	
 	public  int 			maxLines 	= 5;
 	public  int 			maxColumns 	= 7;
-	public  float 			puzzleSpace = 1.2f;
+	public  float 			puzzleSpace = 1.0f;
 	
 	public	GameObject		puzzlePrefab;
 	public	Material[]		puzzleColor;
@@ -46,11 +46,11 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	#region Update is called once per frame
 	void Update () {
 		// Debug
-		if(Input.GetKeyDown(KeyCode.A))
+		if(Input.GetKeyDown(KeyCode.S))
 			SortPuzzle();
-		if(Input.GetKeyDown(KeyCode.Z))
+		if(Input.GetKeyDown(KeyCode.C))
 			CreatePuzzle();
-		if(Input.GetKeyDown(KeyCode.Q))
+		if(Input.GetKeyDown(KeyCode.M))
 			MatchingPuzzle();
 
 		switch(state)
@@ -74,6 +74,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			{
 				SortPuzzle();
 				CreatePuzzle();
+				CheckPuzzleIDLeakage();
 			}
 			break;
 		};
@@ -121,7 +122,6 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			// Sort Puzzle ID 
 			if(targetPuzzle.ID / maxColumns < maxLines - 1)
 			{
-
 				for(int id = targetPuzzle.ID + maxColumns;id < maxpuzzles;id += maxColumns)
 				{
 					GameObject emptyTemp = puzzles[SearchPuzzleNo(id)];
@@ -138,7 +138,10 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			}
 			// Set Position
 			targetPuzzle.MoveAmountClear();
-			iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",CalcPuzzlePosition(targetPuzzle.ID),"time",moveTime));
+			Vector3 nowPos = puzzles[puzzleNo].transform.position;
+			Vector3 targetPos = CalcPuzzlePosition(targetPuzzle.ID);
+			if(Vector3.Distance(nowPos,targetPos) > puzzleSpace / 10.0f)
+				iTween.MoveTo(puzzles[puzzleNo],iTween.Hash("position",targetPos,"time",moveTime));
 		}
 	}
 	#endregion
@@ -352,4 +355,18 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	}
 	#endregion
 
+	#region Check if there is any leakage of the puzzle ID
+	void CheckPuzzleIDLeakage()
+	{
+		Puzzle targetPuzzle;
+		for(int puzzleNo = 0; puzzleNo < maxpuzzles;puzzleNo++)
+		{
+			targetPuzzle = puzzles[puzzleNo].GetComponent<Puzzle>();
+			if(targetPuzzle.ID < 0 || targetPuzzle.ID >=  maxpuzzles)
+			{
+				print ("Puzzle" + puzzles[puzzleNo].name + " is a leak of the ID");
+			}
+		}
+	}
+	#endregion
 }
