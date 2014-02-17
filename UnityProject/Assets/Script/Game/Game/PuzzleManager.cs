@@ -31,7 +31,7 @@ public class PuzzleData
 	public PuzzleData(int puzzleObjectListSize)
 	{
 		puzzleObjectList 	= new GameObject[puzzleObjectListSize];
-		state				= STATE.Check;
+		state				= STATE.Select;
 		selectedPuzzleNo	= 0;
 	}
 };
@@ -97,4 +97,5 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 		return 0;
 	}        
 	#endregion
+
 }

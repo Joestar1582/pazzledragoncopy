@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PuzzleOperater {
+public static class PuzzleOperater {
 
 	#region Calc Puzzle Position from ID
 	public static Vector3 CalcPuzzlePosition(PuzzleOperaterParam puzzleParam,int id)

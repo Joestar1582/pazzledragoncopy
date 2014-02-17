@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PuzzlePieceGraveyard {
+public static class PuzzlePieceGraveyard {
 
 }

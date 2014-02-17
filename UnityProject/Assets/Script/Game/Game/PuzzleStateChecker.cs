@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PuzzleStateChecker  {
+public static class PuzzleStateChecker  {
 
 	#region Puzzle check you have selected.
 	public static void SelectedPuzzlePiece(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,PuzzleData.STATE nextState)

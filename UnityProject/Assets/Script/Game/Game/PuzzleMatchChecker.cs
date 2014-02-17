@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PuzzleMatchChecker {
+public static class PuzzleMatchChecker {
 	#region Matching Puzzles
 	public static bool Check(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{

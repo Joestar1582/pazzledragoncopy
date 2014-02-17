@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PuzzlePieceFactory  {
+public static class PuzzlePieceFactory  {
 	#region Create Puzzle Piece
 	public static void CreatePuzzlePieceObject(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,
 	                       GameObject puzzlePiecePrefab,Material[] puzzleColorList)
@@ -12,14 +12,17 @@ public class PuzzlePieceFactory  {
 			puzzleData.puzzleObjectList[puzzleNo] = Object.Instantiate(puzzlePiecePrefab,
 			                                                PuzzleOperater.CalcPuzzlePosition(puzzleParam,puzzleNo),
 			                                                Quaternion.identity) as GameObject;
-			puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().ID = puzzleNo;
-			puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().used = true;
 			puzzleData.puzzleObjectList[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
 
+			// Set Parameters
+			PuzzlePiece piece = puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>();
+			piece.ID = puzzleNo;
+			piece.used = true;
 			// Set the color to random.
 			int colorIdx = Random.Range(0,puzzleColorList.Length);
-			puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().SetColor(colorIdx,puzzleColorList[colorIdx]);
+			piece.SetColor(colorIdx,puzzleColorList[colorIdx]);
 		}
+
 	}
 	#endregion
 
@@ -47,7 +50,8 @@ public class PuzzlePieceFactory  {
 				puzzlePos = PuzzleOperater.CalcPuzzlePosition(puzzleParam,targetPuzzle.ID);
 				puzzlePos.y -= puzzleParam.puzzleSpace;
 				puzzleData.puzzleObjectList[puzzleNo].transform.position = puzzlePos;
-				iTween.MoveTo(puzzleData.puzzleObjectList[puzzleNo],iTween.Hash("position",PuzzleOperater.CalcPuzzlePosition(puzzleParam,targetPuzzle.ID),"time",puzzleParam.moveTime));
+				iTween.MoveTo(puzzleData.puzzleObjectList[puzzleNo],iTween.Hash("position",PuzzleOperater.CalcPuzzlePosition(puzzleParam,targetPuzzle.ID),
+				                                                                "time",puzzleParam.moveTime));
 
 				// Set the color to random.
 				int colorIdx = Random.Range(0,puzzleColorList.Length);
