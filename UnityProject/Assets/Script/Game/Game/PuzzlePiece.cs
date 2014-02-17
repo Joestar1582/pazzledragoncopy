@@ -1,34 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Puzzle : MonoBehaviour {
-	public int 		ID			= 999;
-	public bool 	selected	= false;
-	public bool		used		= false;
-	public int 		colorNo		= 999;
+public class PuzzlePiece : MonoBehaviour {
+	public 		int 		ID			= 999;
+	public 		bool 		selected	= false;
+	public 		bool		used		= false;
+	public 		int 		colorNo		= 999;
 
-	private Vector3 	screenPoint;
-    private Vector3 	offset;
+	private 	Vector3 	screenPoint;
+    private 	Vector3 	offset;
+	private 	Vector3 	oldPos;
+	public 		Vector3 	moveAmount;	
 
-	private Vector3 	oldPos;
-
-	public Vector3 		moveAmount;	
-
-	// Use this for initialization
-	void Start () {
 	
-	}
-	
-	// Update is called once per frame
-	void Update () {
- 
-	}
-
 	# region Mouse Action
     void OnMouseDown() {
        	this.screenPoint = Camera.main.WorldToScreenPoint(transform.position);
         this.offset = transform.position - 
-			Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+		Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
 		oldPos = transform.position;
 //		selected = true;
     }
@@ -71,6 +60,7 @@ public class Puzzle : MonoBehaviour {
 		oldPos = transform.position;
 		moveAmount = Vector3.zero;
 	}
+
 	public void MoveAmountClear(Vector3 referencePos)
 	{
 		oldPos = referencePos;
