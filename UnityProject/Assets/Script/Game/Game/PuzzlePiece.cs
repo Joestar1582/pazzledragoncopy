@@ -5,7 +5,7 @@ public class PuzzlePiece : MonoBehaviour {
 	public 		int 		ID			= 999;
 	public 		bool 		selected	= false;
 	public 		bool		used		= false;
-	public 		int 		colorNo		= 999;
+	public 		int 		type		= 999;
 
 	private 	Vector3 	screenPoint;
     private 	Vector3 	offset;
@@ -21,7 +21,7 @@ public class PuzzlePiece : MonoBehaviour {
 		oldPos = transform.position;
 //		selected = true;
     }
-
+	
     void OnMouseUp() {
 		selected = false;
     }
@@ -48,13 +48,15 @@ public class PuzzlePiece : MonoBehaviour {
 	}
 	#endregion
 
-
-	public void SetColor(int colorIdx,Material mat)
+	#region Set Puzzle Piece Color & Type
+	public void SetColor(int typeNo,Material mat)
 	{
-		colorNo = colorIdx;
+		type = typeNo;
 		this.renderer.material = mat;
 	}
+	#endregion
 
+	#region Clear MOVE amount
 	public void MoveAmountClear()
 	{
 		oldPos = transform.position;
@@ -66,6 +68,33 @@ public class PuzzlePiece : MonoBehaviour {
 		oldPos = referencePos;
 		moveAmount = Vector3.zero;
 	}
+	#endregion
 
+	#region Action List
+	public void Move(Vector3 targetPos,float time)
+	{
+		iTween.MoveTo(gameObject,iTween.Hash("position",targetPos,"time",time));
+	}
+
+	public void Move(Vector3 initPos,Vector3 targetPos,float time)
+	{
+		gameObject.transform.position = initPos;
+		iTween.MoveTo(gameObject,iTween.Hash("position",targetPos,"time",time));
+	}
+
+	public void Resume()
+	{
+		used = true;
+		gameObject.renderer.enabled = true;
+		MoveAmountClear();
+	}
+
+	public void Stop()
+	{
+		used = false;
+		gameObject.renderer.enabled = false;
+		MoveAmountClear();
+	}
+	#endregion
 
 }

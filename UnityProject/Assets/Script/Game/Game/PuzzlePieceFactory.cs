@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq; 
 
 public static class PuzzlePieceFactory  {
 	#region Create Puzzle Piece
@@ -9,15 +10,16 @@ public static class PuzzlePieceFactory  {
 		for(int puzzleNo = 0;puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
 		{
 			// Create puzzle piece.
-			puzzleData.puzzleObjectList[puzzleNo] = Object.Instantiate(puzzlePiecePrefab,
-			                                                PuzzleOperater.CalcPuzzlePosition(puzzleParam,puzzleNo),
-			                                                Quaternion.identity) as GameObject;
-			puzzleData.puzzleObjectList[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
+			puzzleData.pieceObjectList.Add(Object.Instantiate(puzzlePiecePrefab,
+			                                                  PuzzleOperater.CalcPuzzlePosition(puzzleParam,puzzleNo),
+			                                                  Quaternion.identity) as GameObject);
+			puzzleData.pieceObjectList[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
 
 			// Set Parameters
-			PuzzlePiece piece = puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>();
+			PuzzlePiece piece = puzzleData.pieceObjectList[puzzleNo].GetComponent<PuzzlePiece>();
 			piece.ID = puzzleNo;
-			piece.used = true;
+			piece.Resume();
+
 			// Set the color to random.
 			int colorIdx = Random.Range(0,puzzleColorList.Length);
 			piece.SetColor(colorIdx,puzzleColorList[colorIdx]);
@@ -28,37 +30,30 @@ public static class PuzzlePieceFactory  {
 
 
 	#region Create NEW Puzzle to empty area
-	public static void CreateAtEmpty(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,
-	                                 GameObject puzzlePiecePrefab,Material[] puzzleColorList)
+	public static void CreateAtEmpty(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,Material[] puzzleColorList)
 	{
 		// Rearranged in ascending order of ID puzzles
-		PuzzleOperater.PuzzleQuickSort(ref puzzleData,0,puzzleParam.maxPuzzles - 1);
+		puzzleData.Sort();
 		// Create
-		for(int puzzleNo = puzzleParam.maxPuzzles - 1; puzzleNo >= 0;puzzleNo--)
+		puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
 		{
-			Vector3 puzzlePos = Vector3.zero;
-			PuzzlePiece targetPuzzle = puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>();
-
+			PuzzlePiece piece = pieceObject.GetComponent<PuzzlePiece>();
 			// Create a new puzzle piece ID that is not used
-			if(targetPuzzle.used == false)
+			if(piece.used == false)
 			{
-				targetPuzzle.used = true;
-				puzzleData.puzzleObjectList[puzzleNo].renderer.enabled = true;
-				targetPuzzle.MoveAmountClear();
+				// Resume Puzzle Piece
+				piece.Resume();
 
 				// Puzzle emerges from the bottom
-				puzzlePos = PuzzleOperater.CalcPuzzlePosition(puzzleParam,targetPuzzle.ID);
-				puzzlePos.y -= puzzleParam.puzzleSpace;
-				puzzleData.puzzleObjectList[puzzleNo].transform.position = puzzlePos;
-				iTween.MoveTo(puzzleData.puzzleObjectList[puzzleNo],iTween.Hash("position",PuzzleOperater.CalcPuzzlePosition(puzzleParam,targetPuzzle.ID),
-				                                                                "time",puzzleParam.moveTime));
+				Vector3 initPos = PuzzleOperater.CalcPuzzlePosition(puzzleParam,piece.ID);
+				initPos.y -= puzzleParam.puzzleSpace;
+				piece.Move(initPos,PuzzleOperater.CalcPuzzlePosition(puzzleParam,piece.ID),puzzleParam.moveTime);
 
 				// Set the color to random.
-				int colorIdx = Random.Range(0,puzzleColorList.Length);
-				targetPuzzle.SetColor(colorIdx,puzzleColorList[colorIdx]);
+				int typeNo = Random.Range(0,puzzleColorList.Length);
+				piece.SetColor(typeNo,puzzleColorList[typeNo]);
 			}
-		}
-
+		} );
 	}
 	#endregion
 }

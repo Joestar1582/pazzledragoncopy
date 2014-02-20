@@ -6,69 +6,55 @@ public static class PuzzleMatchChecker {
 	public static bool Check(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
 		bool checkMatch = false;
-		for(int puzzleNo = 0; puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
-		{
-			PuzzlePiece targetPuzzle = puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>();
-			int combo = 0;
-			GameObject nextPuzzleObj;
-			PuzzlePiece nextPuzzle;
 
+		foreach(var pieceObject in puzzleData.pieceObjectList)
+		{
+			PuzzlePiece targetPuzzle = pieceObject.GetComponent<PuzzlePiece>();
+			int numCombo = 0;
+			PuzzlePiece nextPuzzle;
+			
 			// Check Column
 			if(targetPuzzle.ID % puzzleParam.maxColumns < puzzleParam.maxColumns - 2)
 			{
-				for(int i = 1;(i + targetPuzzle.ID) % puzzleParam.maxColumns <= puzzleParam.maxColumns - 1;i++,combo++)
+				for(int i = 1;(i + targetPuzzle.ID) % puzzleParam.maxColumns < puzzleParam.maxColumns;i++,numCombo++)
 				{
-					nextPuzzleObj = puzzleData.puzzleObjectList[PuzzleManager.SearchPuzzleNo(puzzleData.puzzleObjectList,puzzleParam,i + targetPuzzle.ID)];
-					nextPuzzle = nextPuzzleObj.GetComponent<PuzzlePiece>();
-					if(targetPuzzle.colorNo != nextPuzzle.colorNo)
+					nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
+					if(targetPuzzle.type != nextPuzzle.type)
 						break;
 				}
-				if(combo >= 2)
+				if(numCombo >= 2)
 				{
 					checkMatch = true;
-					targetPuzzle.used = false;
-					targetPuzzle.MoveAmountClear();
-					puzzleData.puzzleObjectList[puzzleNo].renderer.enabled = false;
-					for(int j = 1;j <= combo;j++)
+					targetPuzzle.Stop();
+					for(int j = 1;j <= numCombo;j++)
 					{
-						nextPuzzleObj = puzzleData.puzzleObjectList[PuzzleManager.SearchPuzzleNo(puzzleData.puzzleObjectList,puzzleParam,targetPuzzle.ID + j)];
-						nextPuzzle = nextPuzzleObj.GetComponent<PuzzlePiece>();
-						nextPuzzle.used = false;
-						nextPuzzle.MoveAmountClear();
-						nextPuzzleObj.renderer.enabled = false;
+						nextPuzzle = puzzleData.FindPiece(j + targetPuzzle.ID);
+						nextPuzzle.Stop();
 					}
 				}
 			}
-
+			
 			// Check Line
-			combo = 0;
+			numCombo = 0;
 			if(targetPuzzle.ID / puzzleParam.maxColumns < puzzleParam.maxLines - 2)
 			{
-				for(int i = puzzleParam.maxColumns;(i + targetPuzzle.ID) / puzzleParam.maxColumns <= puzzleParam.maxLines - 1;i += puzzleParam.maxColumns,combo++)
+				for(int i = puzzleParam.maxColumns;(i + targetPuzzle.ID) / puzzleParam.maxColumns <= puzzleParam.maxLines - 1;i += puzzleParam.maxColumns,numCombo++)
 				{
-					nextPuzzleObj = puzzleData.puzzleObjectList[PuzzleManager.SearchPuzzleNo(puzzleData.puzzleObjectList,puzzleParam,i + targetPuzzle.ID)];
-					nextPuzzle = nextPuzzleObj.GetComponent<PuzzlePiece>();
-					if(targetPuzzle.colorNo != nextPuzzle.colorNo)
+					nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
+					if(targetPuzzle.type != nextPuzzle.type)
 						break;
 				}
-				if(combo >= 2)
+				if(numCombo >= 2)
 				{
-//					print ("Puzzle" + targetPuzzle.ID.ToString() + " is " + (combo+1).ToString() + "combo in Line");
 					checkMatch = true;
-					targetPuzzle.used = false;
-					targetPuzzle.MoveAmountClear();
-					puzzleData.puzzleObjectList[puzzleNo].renderer.enabled = false;
-					for(int j = 1;j <= combo;j++)
+					targetPuzzle.Stop();
+					for(int j = 1;j <= numCombo;j++)
 					{
-						nextPuzzleObj = puzzleData.puzzleObjectList[PuzzleManager.SearchPuzzleNo(puzzleData.puzzleObjectList,puzzleParam,targetPuzzle.ID + j * puzzleParam.maxColumns)];
-						nextPuzzle = nextPuzzleObj.GetComponent<PuzzlePiece>();
-						nextPuzzle.used = false;
-						nextPuzzle.MoveAmountClear();
-						nextPuzzleObj.renderer.enabled = false;
+						nextPuzzle = puzzleData.FindPiece(j * puzzleParam.maxColumns + targetPuzzle.ID);
+						nextPuzzle.Stop();
 					}
 				}
 			}
-
 		}
 		return checkMatch;
 	}

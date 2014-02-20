@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public static class PuzzleStateChecker  {
 
 	#region Puzzle check you have selected.
 	public static void SelectedPuzzlePiece(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,PuzzleData.STATE nextState)
 	{
-		for(int puzzleNo = 0; puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
+		foreach(var peiceObject in puzzleData.pieceObjectList.Select((value, index) => new {value,index}))
 		{
-			if(puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().selected)
+			if(peiceObject.value.GetComponent<PuzzlePiece>().selected)
 			{
 				puzzleData.state = nextState;
-				puzzleData.selectedPuzzleNo = puzzleNo;
+				puzzleData.selectedPuzzleNo = peiceObject.index;
 				return;
 			}
 		}
@@ -21,9 +22,9 @@ public static class PuzzleStateChecker  {
 	#region Puzzle check you have NOT selected.
 	public static void UnselectedPuzzlePiece(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,PuzzleData.STATE nextState)
 	{
-		for(int puzzleNo = 0; puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
+		foreach(var peiceObject in puzzleData.pieceObjectList.Select((value, index) => new {value,index}))
 		{
-			if(puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().selected)
+			if(peiceObject.value.GetComponent<PuzzlePiece>().selected)
 				return;
 		}
 		puzzleData.state = nextState;
@@ -32,17 +33,22 @@ public static class PuzzleStateChecker  {
 	
 
 	#region Check if there is any leakage of the puzzle ID
-	public static void CheckPuzzleIDLeakage(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	public static void CheckPuzzleIDLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
-		PuzzlePiece targetPuzzle;
-		for(int puzzleNo = 0; puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
+		foreach(var pieceObject in puzzleData.pieceObjectList)
 		{
-			targetPuzzle = puzzleData.puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>();
-			if(targetPuzzle.ID < 0 || targetPuzzle.ID >=  puzzleParam.maxPuzzles)
-			{
-				Debug.Log ("Puzzle" + puzzleData.puzzleObjectList[puzzleNo].name + " is a leak of the ID");
-			}
+			PuzzlePiece targetPuzzle = pieceObject.GetComponent<PuzzlePiece>();
+			if(targetPuzzle.ID < 0 || targetPuzzle.ID >=  puzzleData.pieceObjectList.Count)
+				Debug.Log ("Puzzle" + pieceObject.name + " is a leak of the ID");
 		}
+	}
+	#endregion
+
+	#region Check if there is any leakage of the puzzle object index
+	public static void CheckPuzzleObjectIndexLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,int targetIdx)
+	{
+		if(targetIdx < 0 || targetIdx >=  puzzleData.pieceObjectList.Count)
+			Debug.Log ("Leak of the puzzle object index " + targetIdx);
 	}
 	#endregion
 

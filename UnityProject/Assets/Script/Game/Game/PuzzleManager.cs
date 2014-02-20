@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 #region Data set of puzzle
 [System.Serializable]
@@ -12,31 +13,6 @@ public class PuzzleOperaterParam
 	public		float					moveTime;
 };
 #endregion
-
-#region Data set of puzzle
-[System.Serializable]
-public class PuzzleData
-{
-	public enum STATE
-	{
-		Select,
-		Move,
-		Check
-	};
-
-	public 		GameObject[] 			puzzleObjectList;
-	public 		STATE 					state;
-	public		int						selectedPuzzleNo;
-
-	public PuzzleData(int puzzleObjectListSize)
-	{
-		puzzleObjectList 	= new GameObject[puzzleObjectListSize];
-		state				= STATE.Select;
-		selectedPuzzleNo	= 0;
-	}
-};
-#endregion
-
 
 [System.Serializable]
 public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
@@ -65,7 +41,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			break;
 
 		case PuzzleData.STATE.Move:
-			PuzzleOperater.Move(ref puzzleData,puzzleParam);
+			PuzzleOperater.Operate(ref puzzleData,puzzleParam);
 			PuzzleStateChecker.UnselectedPuzzlePiece(ref puzzleData,puzzleParam,PuzzleData.STATE.Check);
 			break;
 
@@ -77,25 +53,13 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			else
 			{
 				PuzzleOperater.Sort(ref puzzleData,puzzleParam);
-				PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzlePiecePrefab,puzzleColorList);
-				PuzzleStateChecker.CheckPuzzleIDLeakage(ref puzzleData,puzzleParam);
+				PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
+				PuzzleStateChecker.CheckPuzzleIDLeakage(puzzleData,puzzleParam);
 			}
 			break;
 		};
 
 	}
-	#endregion
-	
-	#region Search pazzle number from ID
-	public static int SearchPuzzleNo(GameObject[] puzzleObjectList,PuzzleOperaterParam puzzleParam,int id)
-	{
-		for(int puzzleNo = 0; puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
-		{
-			if(puzzleObjectList[puzzleNo].GetComponent<PuzzlePiece>().ID == id)
-				return puzzleNo;
-		}
-		return 0;
-	}        
 	#endregion
 
 }
