@@ -4,7 +4,7 @@ using System.Linq;
 
 public static class PuzzleStateChecker  {
 
-	#region Puzzle check you have selected.
+	#region Puzzle check player have selected.
 	public static void SelectedPuzzlePiece(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,PuzzleData.STATE nextState)
 	{
 		foreach(var peiceObject in puzzleData.pieceObjectList.Select((value, index) => new {value,index}))
@@ -19,7 +19,7 @@ public static class PuzzleStateChecker  {
 	}
 	#endregion
 
-	#region Puzzle check you have NOT selected.
+	#region Puzzle check player have NOT selected.
 	public static void UnselectedPuzzlePiece(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,PuzzleData.STATE nextState)
 	{
 		foreach(var peiceObject in puzzleData.pieceObjectList.Select((value, index) => new {value,index}))

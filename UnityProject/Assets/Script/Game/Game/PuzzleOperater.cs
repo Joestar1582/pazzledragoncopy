@@ -26,9 +26,11 @@ public static class PuzzleOperater {
 			Vector3 puzzlePos = Vector3.zero;
 			PuzzlePiece targetPuzzle = puzzleData.pieceObjectList[puzzleNo].GetComponent<PuzzlePiece>();
 			
-			// Sort Puzzle ID 
-			if(targetPuzzle.ID / puzzleParam.maxColumns < puzzleParam.maxLines - 1)
+			// It moves one on the target is empty
+			int targetLineNo = targetPuzzle.ID / puzzleParam.maxColumns;
+			if(targetLineNo < puzzleParam.maxLines - 1)
 			{
+				// Check until it can move
 				for(int id = targetPuzzle.ID + puzzleParam.maxColumns;id < puzzleParam.maxPuzzles;id += puzzleParam.maxColumns)
 				{
 					GameObject emptyTemp = puzzleData.pieceObjectList[puzzleData.FindPieceObjectIndex(id)];
@@ -103,7 +105,7 @@ public static class PuzzleOperater {
 		// The amount of movement becomes a constant value,Change ID
 		Vector3 amount = puzzleData.pieceObjectList[targetObjectIdx].transform.position - selectedPuzzle.transform.position;
 		if( amount.x < puzzleParam.puzzleSpace && amount.x > -puzzleParam.puzzleSpace &&
-		   amount.z < puzzleParam.puzzleSpace && amount.z > -puzzleParam.puzzleSpace )
+		   	amount.z < puzzleParam.puzzleSpace && amount.z > -puzzleParam.puzzleSpace )
 		{
 			targetPuzzle = puzzleData.pieceObjectList[targetObjectIdx].GetComponent<PuzzlePiece>();
 			targetPuzzle.ID = tempID;

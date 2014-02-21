@@ -17,7 +17,7 @@ public class PuzzleData
 	public		int						selectedPuzzleNo;
 
 	#region Construct
-	public PuzzleData(int puzzleObjectListSize)
+	public PuzzleData()
 	{
 		pieceObjectList		= new List<GameObject>();
 		state				= STATE.Select;

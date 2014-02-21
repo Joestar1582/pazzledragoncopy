@@ -11,6 +11,7 @@ public class PuzzleOperaterParam
 	public		int						maxPuzzles;
 	public  	float 					puzzleSpace;
 	public		float					moveTime;
+	public		int						standardCombo;
 };
 #endregion
 
@@ -26,7 +27,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 	#region Use this for initialization
 	void Start () {
 		// Create Puzzles
-		puzzleData = new PuzzleData(puzzleParam.maxPuzzles);
+		puzzleData = new PuzzleData();
 		PuzzlePieceFactory.CreatePuzzlePieceObject(ref puzzleData,puzzleParam,puzzlePiecePrefab,puzzleColorList);
 	}
 	#endregion
@@ -50,7 +51,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			{
 				puzzleData.state = PuzzleData.STATE.Select;
 			}
-			else
+			else 
 			{
 				PuzzleOperater.Sort(ref puzzleData,puzzleParam);
 				PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
