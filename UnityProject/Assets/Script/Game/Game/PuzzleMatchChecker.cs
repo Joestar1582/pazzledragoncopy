@@ -3,7 +3,7 @@ using System.Collections;
 
 public static class PuzzleMatchChecker {
 	#region Matching Puzzles
-	public static bool Check(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	public static bool hasCombo(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
 		bool checkMatch = false;
 
@@ -13,51 +13,60 @@ public static class PuzzleMatchChecker {
 			PuzzlePiece nextPuzzle;
 			int numCombo;
 			int limitBorder;
-
-			// Check Column
-			numCombo = 1;
-			limitBorder = puzzleParam.maxColumns - (puzzleParam.standardCombo - 1);
-			if(targetPuzzle.ID % puzzleParam.maxColumns < limitBorder)
+			if(targetPuzzle.used)
 			{
-				// Search to the last column
-				for(int i = 1;(i + targetPuzzle.ID) % puzzleParam.maxColumns < puzzleParam.maxColumns;i++,numCombo++)
+				// Check Column
+				numCombo = 1;
+				limitBorder = puzzleParam.maxColumns - (puzzleParam.standardCombo - 1);
+				if(targetPuzzle.ID % puzzleParam.maxColumns < limitBorder)
 				{
-					nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
-					if(targetPuzzle.type != nextPuzzle.type)
-						break;
-				}
-				if(numCombo >= puzzleParam.standardCombo)
-				{
-					checkMatch = true;
-					targetPuzzle.Stop();
-					for(int j = 1;j < numCombo;j++)
+					// Search to the last column
+					for(int i = 1;
+					    PuzzleCalculator.PieceLineNo(puzzleParam,(targetPuzzle.ID)) == PuzzleCalculator.PieceLineNo(puzzleParam,(i + targetPuzzle.ID));
+					    i++,numCombo++)
 					{
-						nextPuzzle = puzzleData.FindPiece(j + targetPuzzle.ID);
-						nextPuzzle.Stop();
+						nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
+						if(targetPuzzle.type != nextPuzzle.type)
+							break;
+					}
+					if(numCombo >= puzzleParam.standardCombo)
+					{
+						// Matched
+						checkMatch = true;
+						targetPuzzle.used = false;
+						for(int j = 1;j < numCombo;j++)
+						{
+							nextPuzzle = puzzleData.FindPiece(j + targetPuzzle.ID);
+							nextPuzzle.used = false;
+						}
 					}
 				}
-			}
-			
-			// Check Line
-			numCombo = 1;
-			limitBorder = puzzleParam.maxLines - (puzzleParam.standardCombo - 1);
-			if(targetPuzzle.ID / puzzleParam.maxColumns < limitBorder)
-			{
-				// Search to the last line
-				for(int i = puzzleParam.maxColumns;(i + targetPuzzle.ID) / puzzleParam.maxColumns <= puzzleParam.maxLines - 1;i += puzzleParam.maxColumns,numCombo++)
+				
+				// Check Line
+				numCombo = 1;
+				limitBorder = puzzleParam.maxLines - (puzzleParam.standardCombo - 1);
+				if(PuzzleCalculator.PieceLineNo(puzzleParam,targetPuzzle.ID) < limitBorder)
 				{
-					nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
-					if(targetPuzzle.type != nextPuzzle.type)
-						break;
-				}
-				if(numCombo >= puzzleParam.standardCombo)
-				{
-					checkMatch = true;
-					targetPuzzle.Stop();
-					for(int j = 1;j < numCombo;j++)
+					// Search to the last line
+					for(int i = puzzleParam.maxColumns;
+					    PuzzleCalculator.PieceColumnNo(puzzleParam,(targetPuzzle.ID)) == PuzzleCalculator.PieceColumnNo(puzzleParam,(i + targetPuzzle.ID));
+					    i += puzzleParam.maxColumns,numCombo++)
 					{
-						nextPuzzle = puzzleData.FindPiece(j * puzzleParam.maxColumns + targetPuzzle.ID);
-						nextPuzzle.Stop();
+						nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
+						if(targetPuzzle.type != nextPuzzle.type)
+							break;
+					}
+
+					if(numCombo >= puzzleParam.standardCombo)
+					{
+						// Matched
+						checkMatch = true;
+						targetPuzzle.used = false;
+						for(int j = 1;j < numCombo;j++)
+						{
+							nextPuzzle = puzzleData.FindPiece(j * puzzleParam.maxColumns + targetPuzzle.ID);
+							nextPuzzle.used = false;
+						}
 					}
 				}
 			}

@@ -9,12 +9,15 @@ public class PuzzleData
 	{
 		Select,
 		Move,
-		Check
+		Check,
+		Delete,
+		Create
 	};
 	
 	public 		List<GameObject>		pieceObjectList;
 	public 		STATE 					state;
 	public		int						selectedPuzzleNo;
+	public		float					selectedTime;
 
 	#region Construct
 	public PuzzleData()
@@ -22,6 +25,7 @@ public class PuzzleData
 		pieceObjectList		= new List<GameObject>();
 		state				= STATE.Select;
 		selectedPuzzleNo	= 0;
+		selectedTime		= 0;
 	}
 	#endregion
 	
@@ -53,6 +57,19 @@ public class PuzzleData
 		pieceObjectList.Sort((a, b) => a.GetComponent<PuzzlePiece>().ID - b.GetComponent<PuzzlePiece>().ID);
 	}
 	#endregion
+
+	#region Select Action
+	public void UnselectAll()
+	{
+		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().selected = false);
+	}
+
+	public void AvailableAll()
+	{
+		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().Resume());
+	}
+	#endregion
+
 };
 #endregion
 

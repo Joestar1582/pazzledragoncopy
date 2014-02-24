@@ -6,11 +6,11 @@ public class PuzzlePiece : MonoBehaviour {
 	public 		bool 		selected	= false;
 	public 		bool		used		= false;
 	public 		int 		type		= 999;
+	public 		Vector3 	moveAmount;	
 
 	private 	Vector3 	screenPoint;
     private 	Vector3 	offset;
 	private 	Vector3 	oldPos;
-	public 		Vector3 	moveAmount;	
 
 	
 	# region Mouse Action
@@ -95,6 +95,7 @@ public class PuzzlePiece : MonoBehaviour {
 		gameObject.renderer.enabled = false;
 		MoveAmountClear();
 	}
+
 	#endregion
 
 }

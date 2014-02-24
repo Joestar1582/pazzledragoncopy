@@ -11,7 +11,7 @@ public static class PuzzlePieceFactory  {
 		{
 			// Create puzzle piece.
 			puzzleData.pieceObjectList.Add(Object.Instantiate(puzzlePiecePrefab,
-			                                                  PuzzleOperater.CalcPuzzlePosition(puzzleParam,puzzleNo),
+			                                                  PuzzleCalculator.PiecePosition(puzzleParam,puzzleNo),
 			                                                  Quaternion.identity) as GameObject);
 			puzzleData.pieceObjectList[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
 
@@ -45,9 +45,9 @@ public static class PuzzlePieceFactory  {
 				piece.Resume();
 
 				// Puzzle emerges from the bottom
-				Vector3 initPos = PuzzleOperater.CalcPuzzlePosition(puzzleParam,piece.ID);
+				Vector3 initPos = PuzzleCalculator.PiecePosition(puzzleParam,piece.ID);
 				initPos.y -= puzzleParam.puzzleSpace;
-				piece.Move(initPos,PuzzleOperater.CalcPuzzlePosition(puzzleParam,piece.ID),puzzleParam.moveTime);
+				piece.Move(initPos,PuzzleCalculator.PiecePosition(puzzleParam,piece.ID),puzzleParam.moveTime);
 
 				// Set the color to random.
 				int typeNo = Random.Range(0,puzzleColorList.Length);

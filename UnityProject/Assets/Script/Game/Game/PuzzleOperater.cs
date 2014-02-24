@@ -3,18 +3,7 @@ using System.Collections;
 using System.Linq;
 
 public static class PuzzleOperater {
-
-	#region Calc Puzzle Position from ID
-	public static Vector3 CalcPuzzlePosition(PuzzleOperaterParam puzzleParam,int id)
-	{
-		Vector3 puzzlePos;
-		puzzlePos.x = ((id % puzzleParam.maxColumns) - (puzzleParam.maxLines / 2) - 1) * puzzleParam.puzzleSpace;
-		puzzlePos.y = 0;
-		puzzlePos.z = ((id / puzzleParam.maxColumns) - (puzzleParam.maxLines / 2)) * puzzleParam.puzzleSpace;
-		return puzzlePos;
-	}
-	#endregion
-
+	
 	#region Sort automatically puzzle
 	public static void Sort(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
@@ -40,7 +29,7 @@ public static class PuzzleOperater {
 						emptyPuzzle.ID = targetPuzzle.ID;
 						targetPuzzle.ID = id;
 						emptyPuzzle.Stop();
-						emptyTemp.transform.position = CalcPuzzlePosition(puzzleParam,emptyPuzzle.ID);
+						emptyTemp.transform.position = PuzzleCalculator.PiecePosition(puzzleParam,emptyPuzzle.ID);
 					}
 				}
 			}
@@ -49,7 +38,7 @@ public static class PuzzleOperater {
 
 			// Move puzzle piece
 			Vector3 nowPos = puzzleData.pieceObjectList[puzzleNo].transform.position;
-			Vector3 targetPos = CalcPuzzlePosition(puzzleParam,targetPuzzle.ID);
+			Vector3 targetPos = PuzzleCalculator.PiecePosition(puzzleParam,targetPuzzle.ID);
 			if(Vector3.Distance(nowPos,targetPos) > puzzleParam.puzzleSpace / 10.0f)
 				targetPuzzle.Move(targetPos,puzzleParam.moveTime);
 		}
@@ -100,7 +89,8 @@ public static class PuzzleOperater {
 		int tempID = selectedPuzzle.ID;
 
 		// debug
-		PuzzleStateChecker.CheckPuzzleObjectIndexLeakage(puzzleData,puzzleParam,targetObjectIdx);
+		if(PuzzleStateChecker.CheckPuzzleObjectIndexLeakage(puzzleData,puzzleParam,targetObjectIdx))
+			return;
 
 		// The amount of movement becomes a constant value,Change ID
 		Vector3 amount = puzzleData.pieceObjectList[targetObjectIdx].transform.position - selectedPuzzle.transform.position;
@@ -111,11 +101,9 @@ public static class PuzzleOperater {
 			targetPuzzle.ID = tempID;
 			selectedPuzzle.ID = targetID;
 
-			selectedPuzzle.MoveAmountClear(CalcPuzzlePosition(puzzleParam,targetID));
-			targetPuzzle.Move(CalcPuzzlePosition(puzzleParam,tempID),puzzleParam.moveTime);
+			selectedPuzzle.MoveAmountClear(PuzzleCalculator.PiecePosition(puzzleParam,targetID));
+			targetPuzzle.Move(PuzzleCalculator.PiecePosition(puzzleParam,tempID),puzzleParam.moveTime);
 		}
 	}
 	#endregion
-
-
 }

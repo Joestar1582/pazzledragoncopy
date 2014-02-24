@@ -12,6 +12,7 @@ public class PuzzleOperaterParam
 	public  	float 					puzzleSpace;
 	public		float					moveTime;
 	public		int						standardCombo;
+	public		int 					maxSelectTime;
 };
 #endregion
 
@@ -47,19 +48,35 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 			break;
 
 		case PuzzleData.STATE.Check:
-			if(PuzzleMatchChecker.Check(ref puzzleData,puzzleParam) == false)
-			{
-				puzzleData.state = PuzzleData.STATE.Select;
-			}
+			if(PuzzleMatchChecker.hasCombo(ref puzzleData,puzzleParam))
+				puzzleData.state = PuzzleData.STATE.Delete;
 			else 
-			{
-				PuzzleOperater.Sort(ref puzzleData,puzzleParam);
-				PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
-				PuzzleStateChecker.CheckPuzzleIDLeakage(puzzleData,puzzleParam);
-			}
+				puzzleData.state = PuzzleData.STATE.Create;
+			break;
+
+		case PuzzleData.STATE.Delete:
+			PuzzlePieceGraveyard.Delete(ref puzzleData);
+			puzzleData.state = PuzzleData.STATE.Check;
+			break;
+
+		case PuzzleData.STATE.Create:
+			PuzzleOperater.Sort(ref puzzleData,puzzleParam);
+			PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
+
+			// Check again
+			if(PuzzleMatchChecker.hasCombo(ref puzzleData,puzzleParam))
+				puzzleData.state = PuzzleData.STATE.Delete;
+			else 
+				puzzleData.state = PuzzleData.STATE.Select;
 			break;
 		};
 
+		#region Debug
+		if(Input.GetKeyDown(KeyCode.Return))
+			print ("State." + puzzleData.state);
+		if(Input.GetKeyDown(KeyCode.L))
+			puzzleData.AvailableAll();
+		#endregion
 	}
 	#endregion
 
