@@ -9,14 +9,14 @@ public static class PuzzleOperater {
 	{
 		// Rearranged in ascending order of ID puzzles
 		puzzleData.Sort();
-		// Puzzle number that is not in use is through
+
 		for(int puzzleNo = puzzleParam.maxPuzzles - 1; puzzleNo >= 0;puzzleNo--)
 		{
 			Vector3 puzzlePos = Vector3.zero;
 			PuzzlePiece targetPuzzle = puzzleData.pieceObjectList[puzzleNo].GetComponent<PuzzlePiece>();
 			
 			// It moves one on the target is empty
-			int targetLineNo = targetPuzzle.ID / puzzleParam.maxColumns;
+			int targetLineNo = PuzzleCalculator.PieceLineNo(puzzleParam,targetPuzzle.ID);
 			if(targetLineNo < puzzleParam.maxLines - 1)
 			{
 				// Check until it can move
@@ -26,7 +26,7 @@ public static class PuzzleOperater {
 					PuzzlePiece emptyPuzzle = emptyTemp.GetComponent<PuzzlePiece>();
 					if(emptyPuzzle.used == false)
 					{
-						emptyPuzzle.ID = targetPuzzle.ID;
+						emptyPuzzle.ID 	= targetPuzzle.ID;
 						targetPuzzle.ID = id;
 						emptyPuzzle.Stop();
 						emptyTemp.transform.position = PuzzleCalculator.PiecePosition(puzzleParam,emptyPuzzle.ID);
@@ -37,9 +37,9 @@ public static class PuzzleOperater {
 			targetPuzzle.MoveAmountClear();
 
 			// Move puzzle piece
-			Vector3 nowPos = puzzleData.pieceObjectList[puzzleNo].transform.position;
-			Vector3 targetPos = PuzzleCalculator.PiecePosition(puzzleParam,targetPuzzle.ID);
-			if(Vector3.Distance(nowPos,targetPos) > puzzleParam.puzzleSpace / 10.0f)
+			Vector3 nowPos 		= puzzleData.pieceObjectList[puzzleNo].transform.position;
+			Vector3 targetPos 	= PuzzleCalculator.PiecePosition(puzzleParam,targetPuzzle.ID);
+			if(Vector3.Distance(nowPos,targetPos) > PuzzleCalculator.PieceSpaceOffset(puzzleParam))
 				targetPuzzle.Move(targetPos,puzzleParam.moveTime);
 		}
 	}
@@ -48,34 +48,33 @@ public static class PuzzleOperater {
 	#region Operate Puzzles
 	public static void Operate(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
-		Vector3 moveAmount;
-		PuzzlePiece selectedPuzzle = puzzleData.pieceObjectList[puzzleData.selectedPuzzleNo].GetComponent<PuzzlePiece>();
-		moveAmount = selectedPuzzle.moveAmount;
-		
-		float recognitionRange = puzzleParam.puzzleSpace / 1.2f;
-		float recognitionRangeDiagonal = puzzleParam.puzzleSpace / 2.0f;
+		PuzzlePiece selectedPuzzle 	= puzzleData.pieceObjectList[puzzleData.selectedPuzzleNo].GetComponent<PuzzlePiece>();
+		Vector3 moveAmount 			= selectedPuzzle.moveAmount;
+		float amountRange 			= PuzzleCalculator.AmountRange(puzzleParam);
+		float amountRangeDiagonal 	= PuzzleCalculator.AmountRangeDiagonal(puzzleParam);
 
 	// The amount of movement becomes a constant value,Move it
+
 		// Move diagonal
-		if(moveAmount.x >= recognitionRangeDiagonal && moveAmount.z >= recognitionRangeDiagonal)
+		if(moveAmount.x >= amountRangeDiagonal && moveAmount.z >= amountRangeDiagonal)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID + 1 + puzzleParam.maxColumns);
-		else if(moveAmount.x >= recognitionRangeDiagonal && moveAmount.z <= -recognitionRangeDiagonal)
+		else if(moveAmount.x >= amountRangeDiagonal && moveAmount.z <= -amountRangeDiagonal)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID + 1 - puzzleParam.maxColumns);
-		else if(moveAmount.x <= -recognitionRangeDiagonal && moveAmount.z >= recognitionRangeDiagonal)
+		else if(moveAmount.x <= -amountRangeDiagonal && moveAmount.z >= amountRangeDiagonal)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID - 1 + puzzleParam.maxColumns);
-		else if(moveAmount.x <= -recognitionRangeDiagonal && moveAmount.z <= -recognitionRangeDiagonal)
+		else if(moveAmount.x <= -amountRangeDiagonal && moveAmount.z <= -amountRangeDiagonal)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID - 1 - puzzleParam.maxColumns);
 		// Move right.
-		else if(moveAmount.x >= recognitionRange)
+		else if(moveAmount.x >= amountRange)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID + 1);
 		// Move left.
-		else if(moveAmount.x <= -recognitionRange)
+		else if(moveAmount.x <= -amountRange)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID - 1);
 		// Move up.
-		else if(moveAmount.z >= recognitionRange)
+		else if(moveAmount.z >= amountRange)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID + puzzleParam.maxColumns);
 		// Move down.
-		else if(moveAmount.z <= -recognitionRange)
+		else if(moveAmount.z <= -amountRange)
 			ChangeID(ref puzzleData,puzzleParam,selectedPuzzle.ID - puzzleParam.maxColumns);
 	}	
 	#endregion
@@ -85,11 +84,11 @@ public static class PuzzleOperater {
 	{
 		PuzzlePiece selectedPuzzle = puzzleData.pieceObjectList[puzzleData.selectedPuzzleNo].GetComponent<PuzzlePiece>();
 		PuzzlePiece targetPuzzle;
-		int targetObjectIdx = puzzleData.FindPieceObjectIndex(targetID);
-		int tempID = selectedPuzzle.ID;
+		int targetObjectIdx 	= puzzleData.FindPieceObjectIndex(targetID);
+		int tempID 				= selectedPuzzle.ID;
 
 		// debug
-		if(PuzzleStateChecker.CheckPuzzleObjectIndexLeakage(puzzleData,puzzleParam,targetObjectIdx))
+		if(PuzzleStateChecker.hasIndexLeakage(puzzleData,puzzleParam,targetObjectIdx))
 			return;
 
 		// The amount of movement becomes a constant value,Change ID
@@ -97,9 +96,9 @@ public static class PuzzleOperater {
 		if( amount.x < puzzleParam.puzzleSpace && amount.x > -puzzleParam.puzzleSpace &&
 		   	amount.z < puzzleParam.puzzleSpace && amount.z > -puzzleParam.puzzleSpace )
 		{
-			targetPuzzle = puzzleData.pieceObjectList[targetObjectIdx].GetComponent<PuzzlePiece>();
-			targetPuzzle.ID = tempID;
-			selectedPuzzle.ID = targetID;
+			targetPuzzle 		= puzzleData.pieceObjectList[targetObjectIdx].GetComponent<PuzzlePiece>();
+			targetPuzzle.ID	 	= tempID;
+			selectedPuzzle.ID 	= targetID;
 
 			selectedPuzzle.MoveAmountClear(PuzzleCalculator.PiecePosition(puzzleParam,targetID));
 			targetPuzzle.Move(PuzzleCalculator.PiecePosition(puzzleParam,tempID),puzzleParam.moveTime);

@@ -27,4 +27,39 @@ public static class PuzzleCalculator {
 	}
 	#endregion
 
+	#region Calc Line Limit Border from standardCombo
+	public static int LineLimitBorder(PuzzleOperaterParam puzzleParam)
+	{
+		return (puzzleParam.maxLines - (puzzleParam.standardCombo - 1));
+	}
+	#endregion
+
+	#region Calc Column Limit Border from standardCombo
+	public static int ColumnLimitBorder(PuzzleOperaterParam puzzleParam)
+	{
+		return (puzzleParam.maxColumns - (puzzleParam.standardCombo - 1));
+	}
+	#endregion
+
+	#region Calc Puzzle Piece Space Offset
+	public static float PieceSpaceOffset(PuzzleOperaterParam puzzleParam)
+	{
+		return (puzzleParam.puzzleSpace / 10.0f);
+	}
+	#endregion
+
+	#region Calc Amount Range
+	public static float AmountRange(PuzzleOperaterParam puzzleParam)
+	{
+		return (puzzleParam.puzzleSpace / 1.2f);
+	}
+	#endregion
+
+	#region Calc Amount Range Diagonal
+	public static float AmountRangeDiagonal(PuzzleOperaterParam puzzleParam)
+	{
+		return (puzzleParam.puzzleSpace / 2.0f);
+	}
+	#endregion
+
 }

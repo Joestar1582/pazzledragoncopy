@@ -45,7 +45,7 @@ public static class PuzzleStateChecker  {
 	#endregion
 
 	#region Check if there is any leakage of the puzzle object index
-	public static bool CheckPuzzleObjectIndexLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,int targetIdx)
+	public static bool hasIndexLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,int targetIdx)
 	{
 		bool check = false;
 		if(targetIdx < 0 || targetIdx >=  puzzleData.pieceObjectList.Count)
@@ -58,7 +58,7 @@ public static class PuzzleStateChecker  {
 	#endregion
 
 	#region Count up selecting piece's time
-	public static bool CountUpSelectTime(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	public static bool isFinishedSelectTime(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
 		bool checkTimeUp = false;
 		return checkTimeUp;
