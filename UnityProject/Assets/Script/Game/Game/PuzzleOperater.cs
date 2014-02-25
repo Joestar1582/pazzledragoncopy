@@ -4,13 +4,13 @@ using System.Linq;
 
 public static class PuzzleOperater {
 	
-	#region Sort automatically puzzle
-	public static void Sort(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	#region Sort automatically puzzle,reffering to empty
+	public static void SortByRefEmpty(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
 	{
 		// Rearranged in ascending order of ID puzzles
 		puzzleData.Sort();
 
-		for(int puzzleNo = puzzleParam.maxPuzzles - 1; puzzleNo >= 0;puzzleNo--)
+		for(int puzzleNo = puzzleData.pieceObjectList.Count - 1; puzzleNo >= 0;puzzleNo--)
 		{
 			Vector3 puzzlePos = Vector3.zero;
 			PuzzlePiece targetPuzzle = puzzleData.pieceObjectList[puzzleNo].GetComponent<PuzzlePiece>();
@@ -44,6 +44,23 @@ public static class PuzzleOperater {
 		}
 	}
 	#endregion
+
+	#region Sort automatically puzzle ,reffering to ID
+	public static void SortByRefID(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	{
+		// Rearranged in ascending order of ID puzzles
+		puzzleData.Sort();
+
+		puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
+		{
+			PuzzlePiece targetPiece = pieceObject.GetComponent<PuzzlePiece>();
+			Vector3 targetPos = PuzzleCalculator.PiecePosition(puzzleParam,targetPiece.ID);
+			targetPiece.Move(targetPos,puzzleParam.moveTime);
+
+		});
+	}
+	#endregion
+
 
 	#region Operate Puzzles
 	public static void Operate(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
@@ -88,7 +105,7 @@ public static class PuzzleOperater {
 		int tempID 				= selectedPuzzle.ID;
 
 		// debug
-		if(PuzzleStateChecker.hasIndexLeakage(puzzleData,puzzleParam,targetObjectIdx))
+		if(PuzzleStateChecker.hasIndexOutOfRange(puzzleData,targetObjectIdx))
 			return;
 
 		// The amount of movement becomes a constant value,Change ID

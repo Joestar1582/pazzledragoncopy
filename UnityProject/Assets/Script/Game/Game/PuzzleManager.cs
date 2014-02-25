@@ -39,7 +39,7 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 		{
 		case PuzzleData.STATE.Select:
 			PuzzleStateChecker.SelectedPuzzlePiece(ref puzzleData,puzzleParam,PuzzleData.STATE.Move);
-			PuzzleOperater.Sort(ref puzzleData,puzzleParam);
+			PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
 			break;
 
 		case PuzzleData.STATE.Move:
@@ -56,11 +56,12 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 
 		case PuzzleData.STATE.Delete:
 			PuzzlePieceGraveyard.Delete(ref puzzleData);
+			PuzzleOperater.SortByRefID(ref puzzleData,puzzleParam);
 			puzzleData.state = PuzzleData.STATE.Check;
 			break;
 
 		case PuzzleData.STATE.Create:
-			PuzzleOperater.Sort(ref puzzleData,puzzleParam);
+			PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
 			PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
 
 			// Check again

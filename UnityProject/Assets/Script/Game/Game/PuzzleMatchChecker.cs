@@ -14,9 +14,11 @@ public static class PuzzleMatchChecker {
 
 			if(targetPuzzle.used)
 			{
-				// Check Column
 				int targetColumNo 	= PuzzleCalculator.PieceColumnNo(puzzleParam,(targetPuzzle.ID));
 				int targetLineNo 	= PuzzleCalculator.PieceLineNo(puzzleParam,targetPuzzle.ID);
+				int targetIndex;
+
+				// Check Column
 				int numCombo 		= 1;
 				int limitBorder 	= PuzzleCalculator.ColumnLimitBorder(puzzleParam);
 				if(targetColumNo < limitBorder)
@@ -26,6 +28,10 @@ public static class PuzzleMatchChecker {
 					    targetLineNo == PuzzleCalculator.PieceLineNo(puzzleParam,(i + targetPuzzle.ID));
 					    i++,numCombo++)
 					{
+						targetIndex = i + targetPuzzle.ID;
+						if(PuzzleStateChecker.hasIndexOutOfRange(puzzleData,targetIndex))
+							break;
+
 						nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
 						if(targetPuzzle.type != nextPuzzle.type)
 							break;
@@ -37,8 +43,12 @@ public static class PuzzleMatchChecker {
 						targetPuzzle.used 	= false;
 						for(int j = 1;j < numCombo;j++)
 						{
-							nextPuzzle 		= puzzleData.FindPiece(j + targetPuzzle.ID);
-							nextPuzzle.used = false;
+							targetIndex	= j + targetPuzzle.ID;
+							if(PuzzleStateChecker.hasIndexOutOfRange(puzzleData,targetIndex) == false)
+							{
+								nextPuzzle 		= puzzleData.FindPiece(targetIndex);
+								nextPuzzle.used = false;
+							}
 						}
 					}
 				}
@@ -53,7 +63,11 @@ public static class PuzzleMatchChecker {
 					    targetColumNo == PuzzleCalculator.PieceColumnNo(puzzleParam,(i + targetPuzzle.ID));
 					    i += puzzleParam.maxColumns,numCombo++)
 					{
-						nextPuzzle = puzzleData.FindPiece(i + targetPuzzle.ID);
+						targetIndex = i + targetPuzzle.ID;
+						if(PuzzleStateChecker.hasIndexOutOfRange(puzzleData,targetIndex))
+							break;
+
+						nextPuzzle = puzzleData.FindPiece(targetIndex);
 						if(targetPuzzle.type != nextPuzzle.type)
 							break;
 					}
@@ -65,8 +79,12 @@ public static class PuzzleMatchChecker {
 						targetPuzzle.used 	= false;
 						for(int j = 1;j < numCombo;j++)
 						{
-							nextPuzzle 		= puzzleData.FindPiece(j * puzzleParam.maxColumns + targetPuzzle.ID);
-							nextPuzzle.used = false;
+							targetIndex = j * puzzleParam.maxColumns + targetPuzzle.ID;
+							if(PuzzleStateChecker.hasIndexOutOfRange(puzzleData,targetIndex) == false)
+							{
+								nextPuzzle 		= puzzleData.FindPiece(targetIndex);
+								nextPuzzle.used = false;
+							}
 						}
 					}
 				}

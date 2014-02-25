@@ -32,25 +32,25 @@ public static class PuzzleStateChecker  {
 	#endregion
 	
 
-	#region Check if there is any leakage of the puzzle ID
-	public static void CheckPuzzleIDLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam)
+	#region Check if PuzzleID is any out of range
+	public static void CheckPuzzleIDOutOfRange(PuzzleData puzzleData)
 	{
 		foreach(var pieceObject in puzzleData.pieceObjectList)
 		{
 			PuzzlePiece targetPuzzle = pieceObject.GetComponent<PuzzlePiece>();
 			if(targetPuzzle.ID < 0 || targetPuzzle.ID >=  puzzleData.pieceObjectList.Count)
-				Debug.Log ("Puzzle" + pieceObject.name + " is a leak of the ID");
+				Debug.LogWarning (pieceObject.name + "'s ID is out of range");
 		}
 	}
 	#endregion
 
-	#region Check if there is any leakage of the puzzle object index
-	public static bool hasIndexLeakage(PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,int targetIdx)
+	#region Check if Index is any out of range
+	public static bool hasIndexOutOfRange(PuzzleData puzzleData,int targetIdx)
 	{
 		bool check = false;
 		if(targetIdx < 0 || targetIdx >=  puzzleData.pieceObjectList.Count)
 		{
-			Debug.Log ("Leak of the puzzle object index " + targetIdx);
+			Debug.LogWarning ("Index " + targetIdx + " Out of range");
 			check = true;
 		}
 		return check;
