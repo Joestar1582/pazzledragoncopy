@@ -7,22 +7,22 @@ public static class PuzzlePieceFactory  {
 	public static void CreatePuzzlePieceObject(ref PuzzleData puzzleData,PuzzleOperaterParam puzzleParam,
 	                       GameObject puzzlePiecePrefab,Material[] puzzleColorList)
 	{
-		for(int puzzleNo = 0;puzzleNo < puzzleParam.maxPuzzles;puzzleNo++)
+		for(int i = 0;i < puzzleParam.maxPuzzles;i++)
 		{
-			// Create puzzle piece.
+			// Create new piece.
 			puzzleData.pieceObjectList.Add(Object.Instantiate(puzzlePiecePrefab,
-			                                                  PuzzleCalculator.PiecePosition(puzzleParam,puzzleNo),
+			                                                  PuzzleCalculator.GetPiecePosition(puzzleParam,i),
 			                                                  Quaternion.identity) as GameObject);
-			puzzleData.pieceObjectList[puzzleNo].name = "Puzzle" + puzzleNo.ToString();
+			puzzleData.pieceObjectList[i].name = "Puzzle" + i.ToString();
 
 			// Set Parameters
-			PuzzlePiece piece = puzzleData.pieceObjectList[puzzleNo].GetComponent<PuzzlePiece>();
-			piece.ID = puzzleNo;
-			piece.Resume();
+			PuzzlePiece newPiece = puzzleData.pieceObjectList[i].GetComponent<PuzzlePiece>();
+			newPiece.ID = i;
+			newPiece.Resume();
 
 			// Set the color to random.
 			int colorIdx = Random.Range(0,puzzleColorList.Length);
-			piece.SetColor(colorIdx,puzzleColorList[colorIdx]);
+			newPiece.SetColor(colorIdx,puzzleColorList[colorIdx]);
 		}
 
 	}
@@ -37,21 +37,23 @@ public static class PuzzlePieceFactory  {
 		// Create
 		puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
 		{
-			PuzzlePiece piece = pieceObject.GetComponent<PuzzlePiece>();
+			PuzzlePiece targetPiece = pieceObject.GetComponent<PuzzlePiece>();
 			// Create a new puzzle piece ID that is not used
-			if(piece.used == false)
+			if(targetPiece.used == false)
 			{
 				// Resume Puzzle Piece
-				piece.Resume();
+				targetPiece.Resume();
 
 				// Puzzle emerges from the bottom
-				Vector3 initPos = PuzzleCalculator.PiecePosition(puzzleParam,piece.ID);
+				Vector3 targetPos 	= PuzzleCalculator.GetPiecePosition(puzzleParam,targetPiece.ID);
+				Vector3 initPos		= targetPos;
 				initPos.y -= puzzleParam.puzzleSpace;
-				piece.Move(initPos,PuzzleCalculator.PiecePosition(puzzleParam,piece.ID),puzzleParam.moveTime);
+
+				targetPiece.Move(initPos,targetPos,puzzleParam.moveTime);
 
 				// Set the color to random.
 				int typeNo = Random.Range(0,puzzleColorList.Length);
-				piece.SetColor(typeNo,puzzleColorList[typeNo]);
+				targetPiece.SetColor(typeNo,puzzleColorList[typeNo]);
 			}
 		} );
 	}

@@ -2,15 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 
+delegate void PuzzleActionDelegate();
+
 #region Data set of puzzle
 [System.Serializable]
 public class PuzzleOperaterParam
 {
-	public  	int 					maxLines;
+	public  	int 					maxRows;
 	public  	int 					maxColumns;
 	public		int						maxPuzzles;
 	public  	float 					puzzleSpace;
 	public		float					moveTime;
+	public		float					deleteTime;
 	public		int						standardCombo;
 	public		int 					maxSelectTime;
 };
@@ -25,59 +28,71 @@ public class PuzzleManager : SingletonMonoBehaviour<PuzzleManager>{
 
 	private		PuzzleData				puzzleData;
 
+	private		PuzzleActionDelegate	puzzleAction;
+
 	#region Use this for initialization
 	void Start () {
 		// Create Puzzles
 		puzzleData = new PuzzleData();
 		PuzzlePieceFactory.CreatePuzzlePieceObject(ref puzzleData,puzzleParam,puzzlePiecePrefab,puzzleColorList);
+		// Set Action
+		puzzleAction = new PuzzleActionDelegate(PuzzleSelectAction);
 	}
 	#endregion
 
 	#region Update is called once per frame
 	void Update () {
-		switch(puzzleData.state)
-		{
-		case PuzzleData.STATE.Select:
-			PuzzleStateChecker.SelectedPuzzlePiece(ref puzzleData,puzzleParam,PuzzleData.STATE.Move);
-			PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
-			break;
+		puzzleAction();
+		DebugAction();
+	}
+	#endregion
 
-		case PuzzleData.STATE.Move:
-			PuzzleOperater.Operate(ref puzzleData,puzzleParam);
-			PuzzleStateChecker.UnselectedPuzzlePiece(ref puzzleData,puzzleParam,PuzzleData.STATE.Check);
-			break;
+	#region Action List
+	public void PuzzleSelectAction()
+	{
+		PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
+		if(PuzzleStateChecker.IsSelectedPiece(ref puzzleData,puzzleParam) == true)
+			puzzleAction = new PuzzleActionDelegate(PuzzleMoveAction);
+	}
 
-		case PuzzleData.STATE.Check:
-			if(PuzzleMatchChecker.hasCombo(ref puzzleData,puzzleParam))
-				puzzleData.state = PuzzleData.STATE.Delete;
-			else 
-				puzzleData.state = PuzzleData.STATE.Create;
-			break;
+	public void PuzzleMoveAction()
+	{
+		PuzzleOperater.Operate(ref puzzleData,puzzleParam);
+		if(PuzzleStateChecker.IsSelectedPiece(ref puzzleData,puzzleParam) == false)
+			puzzleAction = new PuzzleActionDelegate(PuzzleCheckAction);
+	}
 
-		case PuzzleData.STATE.Delete:
-			PuzzlePieceGraveyard.Delete(ref puzzleData);
-			PuzzleOperater.SortByRefID(ref puzzleData,puzzleParam);
-			puzzleData.state = PuzzleData.STATE.Check;
-			break;
+	public void PuzzleCheckAction()
+	{
+		if(PuzzleMatchChecker.HasMatch(ref puzzleData,puzzleParam))
+			puzzleAction = new PuzzleActionDelegate(PuzzleDestroyAction);
+		else 
+			puzzleAction = new PuzzleActionDelegate(PuzzleCreateAction);
+	}
 
-		case PuzzleData.STATE.Create:
-			PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
-			PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
+	public void PuzzleDestroyAction()
+	{
+		if(PuzzlePieceGraveyard.IsCompletedDestroy(ref puzzleData))
+			puzzleAction = new PuzzleActionDelegate(PuzzleCheckAction);
+		PuzzleOperater.SortByRefID(ref puzzleData,puzzleParam);
+	}
 
-			// Check again
-			if(PuzzleMatchChecker.hasCombo(ref puzzleData,puzzleParam))
-				puzzleData.state = PuzzleData.STATE.Delete;
-			else 
-				puzzleData.state = PuzzleData.STATE.Select;
-			break;
-		};
+	public void PuzzleCreateAction()
+	{
+		PuzzleOperater.SortByRefEmpty(ref puzzleData,puzzleParam);
+		PuzzlePieceFactory.CreateAtEmpty(ref puzzleData,puzzleParam,puzzleColorList);
+		
+		// Check again
+		if(PuzzleMatchChecker.HasMatch(ref puzzleData,puzzleParam))
+			puzzleAction = new PuzzleActionDelegate(PuzzleDestroyAction);
+		else 
+			puzzleAction = new PuzzleActionDelegate(PuzzleSelectAction);
+	}
 
-		#region Debug
-		if(Input.GetKeyDown(KeyCode.Return))
-			print ("State." + puzzleData.state);
+	public void DebugAction()
+	{
 		if(Input.GetKeyDown(KeyCode.L))
 			puzzleData.AvailableAll();
-		#endregion
 	}
 	#endregion
 

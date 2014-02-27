@@ -5,27 +5,18 @@ using System.Collections.Generic;
 #region Data set of puzzle
 public class PuzzleData
 {
-	public enum STATE
-	{
-		Select,
-		Move,
-		Check,
-		Delete,
-		Create
-	};
-	
 	public 		List<GameObject>		pieceObjectList;
-	public 		STATE 					state;
-	public		int						selectedPuzzleNo;
-	public		float					selectedTime;
+	public 		List<string>			selectedPieceNameList;
+	public		int						selectedPieceNo;
+	public		float					selectTime;
 
 	#region Construct
 	public PuzzleData()
 	{
-		pieceObjectList		= new List<GameObject>();
-		state				= STATE.Select;
-		selectedPuzzleNo	= 0;
-		selectedTime		= 0;
+		pieceObjectList			= new List<GameObject>();
+		selectedPieceNameList	= new List<string>();
+		selectedPieceNo			= 0;
+		selectTime				= 0;
 	}
 	#endregion
 	
@@ -34,8 +25,13 @@ public class PuzzleData
 	{
 		return pieceObjectList.FindIndex(item => item.GetComponent<PuzzlePiece>().ID == targetID);
 	}
+	public int FindPieceObjectIndex(string name)
+	{
+		return pieceObjectList.FindIndex(item => item.name == name);
+	}
 	#endregion
-	
+
+
 	#region Find target`s gameobject from pieceObjectList
 	public GameObject FindPieceObject(int targetID)
 	{
@@ -43,13 +39,17 @@ public class PuzzleData
 	}
 	#endregion
 	
-	#region Find target`s puzzlePiece from pieceObjectList
+	#region Find target`s PuzzlePiece from pieceObjectList
 	public PuzzlePiece FindPiece(int targetID)
 	{
 		return pieceObjectList.Find(item => item.GetComponent<PuzzlePiece>().ID == targetID).GetComponent<PuzzlePiece>();
 	}
+	public PuzzlePiece FindPiece(string name)
+	{
+		return pieceObjectList.Find(item => item.name == name).GetComponent<PuzzlePiece>();
+	}
 	#endregion
-	
+
 	
 	#region Sort pieceObjectList where ID
 	public void Sort()
@@ -69,7 +69,7 @@ public class PuzzleData
 		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().Resume());
 	}
 	#endregion
-
+	
 };
 #endregion
 

@@ -3,60 +3,60 @@ using System.Collections;
 
 public static class PuzzleCalculator {
 	#region Calc Puzzle Position from ID
-	public static Vector3 PiecePosition(PuzzleOperaterParam puzzleParam,int id)
+	public static Vector3 GetPiecePosition(PuzzleOperaterParam puzzleParam,int targetId)
 	{
 		Vector3 puzzlePos;
-		puzzlePos.x = ((id % puzzleParam.maxColumns) - (puzzleParam.maxLines / 2) - 1) * puzzleParam.puzzleSpace;
+		puzzlePos.x = ((targetId % puzzleParam.maxColumns) - (puzzleParam.maxRows / 2) - 1) * puzzleParam.puzzleSpace;
 		puzzlePos.y = 0;
-		puzzlePos.z = ((id / puzzleParam.maxColumns) - (puzzleParam.maxLines / 2)) * puzzleParam.puzzleSpace;
+		puzzlePos.z = ((targetId / puzzleParam.maxColumns) - (puzzleParam.maxRows / 2)) * puzzleParam.puzzleSpace;
 		return puzzlePos;
 	}
 	#endregion
 	
 	#region Calc Column No from ID
-	public static int PieceColumnNo(PuzzleOperaterParam puzzleParam,int id)
+	public static int GetPieceColumnNo(PuzzleOperaterParam puzzleParam,int targetId)
 	{
-		return (id % puzzleParam.maxColumns);
+		return (targetId % puzzleParam.maxColumns);
 	}
 	#endregion
 	
-	#region Calc Line No from ID
-	public static int PieceLineNo(PuzzleOperaterParam puzzleParam,int id)
+	#region Calc Row No from ID
+	public static int GetPieceRowNo(PuzzleOperaterParam puzzleParam,int targetId)
 	{
-		return (id / puzzleParam.maxColumns);
+		return (targetId / puzzleParam.maxColumns);
 	}
 	#endregion
 
-	#region Calc Line Limit Border from standardCombo
-	public static int LineLimitBorder(PuzzleOperaterParam puzzleParam)
+	#region Calc Row Limit Border from standardCombo
+	public static int GetRowLimitBorder(PuzzleOperaterParam puzzleParam)
 	{
-		return (puzzleParam.maxLines - (puzzleParam.standardCombo - 1));
+		return (puzzleParam.maxRows - (puzzleParam.standardCombo - 1));
 	}
 	#endregion
 
 	#region Calc Column Limit Border from standardCombo
-	public static int ColumnLimitBorder(PuzzleOperaterParam puzzleParam)
+	public static int GetColumnLimitBorder(PuzzleOperaterParam puzzleParam)
 	{
 		return (puzzleParam.maxColumns - (puzzleParam.standardCombo - 1));
 	}
 	#endregion
 
 	#region Calc Puzzle Piece Space Offset
-	public static float PieceSpaceOffset(PuzzleOperaterParam puzzleParam)
+	public static float GetPieceSpaceOffset(PuzzleOperaterParam puzzleParam)
 	{
 		return (puzzleParam.puzzleSpace / 10.0f);
 	}
 	#endregion
 
-	#region Calc Amount Range
-	public static float AmountRange(PuzzleOperaterParam puzzleParam)
+	#region Calc Amount Range of CrissCross
+	public static float GetAmountRangeCrissCross(PuzzleOperaterParam puzzleParam)
 	{
 		return (puzzleParam.puzzleSpace / 1.2f);
 	}
 	#endregion
 
-	#region Calc Amount Range Diagonal
-	public static float AmountRangeDiagonal(PuzzleOperaterParam puzzleParam)
+	#region Calc Amount Range of Diagonal
+	public static float GetAmountRangeDiagonal(PuzzleOperaterParam puzzleParam)
 	{
 		return (puzzleParam.puzzleSpace / 2.0f);
 	}
