@@ -8,7 +8,9 @@ public class PuzzleData
 	public 		List<GameObject>		pieceObjectList;
 	public 		List<string>			selectedPieceNameList;
 	public		int						selectedPieceNo;
-	public		float					selectTime;
+	public		float					selectTimeCounter;
+	public		float					destroyTimeCounter;
+	public		int						numChaine;
 
 	#region Construct
 	public PuzzleData()
@@ -16,7 +18,9 @@ public class PuzzleData
 		pieceObjectList			= new List<GameObject>();
 		selectedPieceNameList	= new List<string>();
 		selectedPieceNo			= 0;
-		selectTime				= 0;
+		selectTimeCounter		= 0;
+		destroyTimeCounter		= 0;
+		numChaine				= 0;
 	}
 	#endregion
 	
@@ -59,17 +63,42 @@ public class PuzzleData
 	#endregion
 
 	#region Select Action
-	public void UnselectAll()
-	{
-		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().selected = false);
-	}
-
 	public void AvailableAll()
 	{
-		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().Resume());
+		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().canSelect = true);
+	}
+
+	public void NotAvailableAll()
+	{
+		pieceObjectList.ForEach((GameObject pieceObject) => 
+		{
+			PuzzlePiece nowPiece = pieceObject.GetComponent<PuzzlePiece>();
+			nowPiece.canSelect 	= false;
+			nowPiece.selected	= false;
+		}
+		);
+	}
+
+	#endregion
+
+	#region Chaine Action
+	public void ChaineClear()
+	{
+		pieceObjectList.ForEach((GameObject pieceObject) => pieceObject.GetComponent<PuzzlePiece>().chaineID = -1);
+		numChaine = 0;
+	}
+
+	public void SetChaine(int targetChaineID,int newChaineID)
+	{
+		pieceObjectList.ForEach((GameObject pieceObject) => 
+		{
+			PuzzlePiece nowPiece 	= pieceObject.GetComponent<PuzzlePiece>();
+			if(nowPiece.chaineID == targetChaineID)
+				nowPiece.chaineID 	= newChaineID;
+		});
 	}
 	#endregion
-	
+
 };
 #endregion
 

@@ -47,7 +47,7 @@ public static class PuzzlePieceFactory  {
 				// Puzzle emerges from the bottom
 				Vector3 targetPos 	= PuzzleCalculator.GetPiecePosition(puzzleParam,targetPiece.ID);
 				Vector3 initPos		= targetPos;
-				initPos.y -= puzzleParam.puzzleSpace;
+				initPos.y 			-= puzzleParam.puzzleSpace;
 
 				targetPiece.Move(initPos,targetPos,puzzleParam.moveTime);
 

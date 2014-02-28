@@ -27,17 +27,17 @@ public static class PuzzleCalculator {
 	}
 	#endregion
 
-	#region Calc Row Limit Border from standardCombo
+	#region Calc Row Limit Border from stdNumChaines
 	public static int GetRowLimitBorder(PuzzleOperaterParam puzzleParam)
 	{
-		return (puzzleParam.maxRows - (puzzleParam.standardCombo - 1));
+		return (puzzleParam.maxRows - (puzzleParam.stdNumChaines - 1));
 	}
 	#endregion
 
-	#region Calc Column Limit Border from standardCombo
+	#region Calc Column Limit Border from stdNumChaines
 	public static int GetColumnLimitBorder(PuzzleOperaterParam puzzleParam)
 	{
-		return (puzzleParam.maxColumns - (puzzleParam.standardCombo - 1));
+		return (puzzleParam.maxColumns - (puzzleParam.stdNumChaines - 1));
 	}
 	#endregion
 

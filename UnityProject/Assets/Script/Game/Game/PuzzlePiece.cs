@@ -5,8 +5,10 @@ public class PuzzlePiece : MonoBehaviour {
 	public 		int 		ID			= 999;
 	public 		bool 		selected	= false;
 	public 		bool		used		= false;
+	public 		bool		canSelect	= true;
 	public 		int 		type		= 999;
 	public 		Vector3 	moveAmount;	
+	public		int			chaineID	= -1;
 
 	private 	Vector3 	screenPoint;
     private 	Vector3 	offset;
@@ -15,11 +17,14 @@ public class PuzzlePiece : MonoBehaviour {
 	
 	# region Mouse Action
     void OnMouseDown() {
-       	this.screenPoint = Camera.main.WorldToScreenPoint(transform.position);
-        this.offset = transform.position - 
-		Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
-		oldPos = transform.position;
-//		selected = true;
+		if(canSelect)
+		{
+	       	this.screenPoint = Camera.main.WorldToScreenPoint(transform.position);
+	        this.offset = transform.position - 
+			Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+			oldPos = transform.position;
+			selected = true;
+		}
     }
 	
     void OnMouseUp() {
@@ -27,24 +32,14 @@ public class PuzzlePiece : MonoBehaviour {
     }
 
 	void OnMouseDrag() {
-    	Vector3 currentScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
-        Vector3 currentPosition = Camera.main.ScreenToWorldPoint(currentScreenPoint) + this.offset;
-       	transform.position = currentPosition;
-		selected = true;
-		moveAmount = currentPosition - oldPos;
-
-		#region Debug
-		if(Input.GetKeyDown(KeyCode.Space))
+		if(selected)
 		{
-			used = used ^ true;
-			print ("Puzzle Used " + used.ToString());
+	    	Vector3 currentScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
+	        Vector3 currentPosition = Camera.main.ScreenToWorldPoint(currentScreenPoint) + this.offset;
+	       	transform.position = currentPosition;
+			selected = true;
+			moveAmount = currentPosition - oldPos;
 		}
-		if(Input.GetKeyDown(KeyCode.S))
-		{
-			print ("Selected Puzzle ID " + ID.ToString());
-			print ("moveAmount " + moveAmount.ToString());
-		}
-		#endregion
 	}
 	#endregion
 
@@ -92,6 +87,7 @@ public class PuzzlePiece : MonoBehaviour {
 	public void Stop()
 	{
 		used = false;
+		chaineID = -1;
 		gameObject.renderer.enabled = false;
 		MoveAmountClear();
 	}

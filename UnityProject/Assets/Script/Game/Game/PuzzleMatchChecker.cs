@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 public static class PuzzleMatchChecker {
@@ -10,87 +11,103 @@ public static class PuzzleMatchChecker {
 		foreach(var pieceObject in puzzleData.pieceObjectList)
 		{
 			PuzzlePiece nowPiece = pieceObject.GetComponent<PuzzlePiece>();
-			PuzzlePiece nextPiece;
 
 			if(nowPiece.used)
 			{
-				int targetColumNo 	= PuzzleCalculator.GetPieceColumnNo(puzzleParam,(nowPiece.ID));
-				int targetRowNo 	= PuzzleCalculator.GetPieceRowNo(puzzleParam,nowPiece.ID);
-				int targetIndex;
+				int nowColumNo 			= PuzzleCalculator.GetPieceColumnNo(puzzleParam,(nowPiece.ID));
+				int nowRowNo 			= PuzzleCalculator.GetPieceRowNo(puzzleParam,nowPiece.ID);
+				int rowLimitBorder		= PuzzleCalculator.GetRowLimitBorder(puzzleParam);
+				int columnLimitBorder	= PuzzleCalculator.GetColumnLimitBorder(puzzleParam);
+				int numChaine 			= 1;
 
 				// Check Column
-				int numCombo 		= 1;
-				int limitBorder 	= PuzzleCalculator.GetColumnLimitBorder(puzzleParam);
-				if(targetColumNo < limitBorder)
+				if(nowColumNo < columnLimitBorder)
 				{
 					// Search to the last column
 					for(int i = 1;
-					    targetRowNo == PuzzleCalculator.GetPieceRowNo(puzzleParam,(i + nowPiece.ID));
-					    i++,numCombo++)
+					    nowRowNo == PuzzleCalculator.GetPieceRowNo(puzzleParam,(i + nowPiece.ID));
+					    i++,numChaine++)
 					{
-						targetIndex = i + nowPiece.ID;
-						if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,targetIndex))
-							break;
-
-						nextPiece = puzzleData.FindPiece(i + nowPiece.ID);
-						if(nowPiece.type != nextPiece.type)
+						int targetIndex = i + nowPiece.ID;
+						if(HasNoChaine(puzzleData,nowPiece.ID,targetIndex))
 							break;
 					}
-					if(numCombo >= puzzleParam.standardCombo)
+					if(numChaine >= puzzleParam.stdNumChaines)
 					{
-						// Matched
-						hasMatch 			= true;
-						nowPiece.used 	= false;
-						for(int j = 1;j < numCombo;j++)
-						{
-							targetIndex	= j + nowPiece.ID;
-							if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,targetIndex) == false)
-							{
-								nextPiece 		= puzzleData.FindPiece(targetIndex);
-								nextPiece.used = false;
-							}
-						}
+						Matched(nowPiece.ID,numChaine,ref puzzleData,(nextIndex) => nextIndex + nowPiece.ID);
+						hasMatch = true;
 					}
 				}
 				
 				// Check Row
-				numCombo 			= 1;
-				limitBorder 		= PuzzleCalculator.GetRowLimitBorder(puzzleParam);
-				if(targetRowNo < limitBorder)
+				numChaine = 1;
+				if(nowRowNo < rowLimitBorder)
 				{
 					// Search to the last line
+					int targetIndex;
 					for(int i = puzzleParam.maxColumns;
-					    targetColumNo == PuzzleCalculator.GetPieceColumnNo(puzzleParam,(i + nowPiece.ID));
-					    i += puzzleParam.maxColumns,numCombo++)
+					    nowColumNo == PuzzleCalculator.GetPieceColumnNo(puzzleParam,(i + nowPiece.ID));
+					    i += puzzleParam.maxColumns,numChaine++)
 					{
 						targetIndex = i + nowPiece.ID;
-						if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,targetIndex))
-							break;
-
-						nextPiece = puzzleData.FindPiece(targetIndex);
-						if(nowPiece.type != nextPiece.type)
+						if(HasNoChaine(puzzleData,nowPiece.ID,targetIndex))
 							break;
 					}
 
-					if(numCombo >= puzzleParam.standardCombo)
+					if(numChaine >= puzzleParam.stdNumChaines)
 					{
-						// Matched
-						hasMatch 			= true;
-						nowPiece.used 	= false;
-						for(int j = 1;j < numCombo;j++)
-						{
-							targetIndex = j * puzzleParam.maxColumns + nowPiece.ID;
-							if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,targetIndex) == false)
-							{
-								nextPiece 		= puzzleData.FindPiece(targetIndex);
-								nextPiece.used = false;
-							}
-						}
+						Matched(nowPiece.ID,numChaine,ref  puzzleData,(nextIndex) => nextIndex * puzzleParam.maxColumns + nowPiece.ID);
+						hasMatch = true;
 					}
 				}
 			}
 		}
 		return hasMatch;
+	}
+
+	#endregion
+
+	#region Cheak Matching
+	private static bool HasNoChaine(PuzzleData puzzleData,int nowIndex,int nextIndex)
+	{
+		if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,nextIndex))
+			return true;
+		
+		PuzzlePiece nowPiece 	= puzzleData.FindPiece(nowIndex);
+		PuzzlePiece nextPiece 	= puzzleData.FindPiece(nextIndex);
+		if(nowPiece.type != nextPiece.type)
+			return true;
+
+		return false;
+	}
+	#endregion
+
+	#region Matched
+	private static void Matched(int nowIndex,int numChaine,ref PuzzleData puzzleData,Func<int,int> NextIndex)
+	{
+		PuzzlePiece nowPiece 	= puzzleData.FindPiece(nowIndex);
+		nowPiece.used 			= false;
+
+		puzzleData.numChaine++;
+
+		if(nowPiece.chaineID < 0)
+			nowPiece.chaineID	= puzzleData.numChaine;
+
+		for(int i = 1;i < numChaine;i++)
+		{
+			int nextIndex = NextIndex(i);
+			if(PuzzleStateChecker.HasIndexOutOfRange(puzzleData,nextIndex) == false)
+			{
+				PuzzlePiece nextPiece 	= puzzleData.FindPiece(nextIndex);
+				nextPiece.used 			= false;
+				
+				// Connect the chain if you are chained already
+				if(nextPiece.chaineID < 0)
+					nextPiece.chaineID	= puzzleData.numChaine;
+				else
+					puzzleData.SetChaine(nextPiece.chaineID,nowPiece.chaineID);
+			}
+		}
 	}
 	#endregion
 }
