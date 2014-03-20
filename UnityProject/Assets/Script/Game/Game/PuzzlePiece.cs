@@ -71,16 +71,18 @@ public class PuzzlePiece : MonoBehaviour {
 		iTween.MoveTo(gameObject,iTween.Hash("position",targetPos,"time",time));
 	}
 
-	public void Move(Vector3 initPos,Vector3 targetPos,float time)
+	public void Move(Vector3 startPos,Vector3 endPos,float time)
 	{
-		gameObject.transform.position = initPos;
-		iTween.MoveTo(gameObject,iTween.Hash("position",targetPos,"time",time));
+		gameObject.transform.position = startPos;
+		iTween.MoveTo(gameObject,iTween.Hash("position",endPos,"time",time));
 	}
 
 	public void Resume()
 	{
 		used = true;
 		gameObject.renderer.enabled = true;
+//		iTweenEvent.GetEvent(gameObject,"ColorToClear").Play();
+//		iTweenEvent.GetEvent(gameObject,"ScaleToBig").Play();
 		MoveAmountClear();
 	}
 
@@ -89,6 +91,8 @@ public class PuzzlePiece : MonoBehaviour {
 		used = false;
 		chaineID = -1;
 		gameObject.renderer.enabled = false;
+//		iTweenEvent.GetEvent(gameObject,"ColorToZero").Play();
+//		iTweenEvent.GetEvent(gameObject,"ScaleToSmall").Play();
 		MoveAmountClear();
 	}
 

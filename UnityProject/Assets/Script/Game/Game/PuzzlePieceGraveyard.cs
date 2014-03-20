@@ -11,41 +11,17 @@ public static class PuzzlePieceGraveyard{
 
 		if(TimeCounter.IsTimeOver(ref puzzleData.destroyTimeCounter,puzzleParam.destroyTime))
 		{
-			// Delete preferentially from the puzzle that has been traced
-			if(puzzleData.selectedPieceNameList.Count != 0)
+			int nowChaineID = puzzleData.numChaine;
+			puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
 			{
-				// Select item that has been registered
-				PuzzlePiece registeredPiece = puzzleData.FindPiece(puzzleData.selectedPieceNameList[0]);
-				// Remove the first item
-				puzzleData.selectedPieceNameList.RemoveAt(0);
+				PuzzlePiece nowPiece = pieceObject.GetComponent<PuzzlePiece>();
+				if(nowPiece.chaineID == nowChaineID)
+					nowPiece.Stop();
+			});
 
-				puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
-				{
-					PuzzlePiece nowPiece = pieceObject.GetComponent<PuzzlePiece>();
-					if(registeredPiece.type == nowPiece.type)
-					{
-						if(nowPiece.used == false)
-							nowPiece.Stop();
-					}
-				});
-
-				TimeCounter.StartTimer(ref puzzleData.destroyTimeCounter);
-			}
-			else
-			{
-				int nowChaineID = puzzleData.numChaine;
-				puzzleData.pieceObjectList.ForEach((GameObject pieceObject) => 
-				{
-					PuzzlePiece nowPiece = pieceObject.GetComponent<PuzzlePiece>();
-					if(nowPiece.used == false && nowPiece.chaineID == nowChaineID)
-						nowPiece.Stop();
-				});
-
-				TimeCounter.StartTimer(ref puzzleData.destroyTimeCounter);
-			}
-
+			TimeCounter.StartTimer(ref puzzleData.destroyTimeCounter);
 			puzzleData.numChaine--;
-			if(puzzleData.numChaine <= 0)
+			if(puzzleData.numChaine < 0)
 				isCompleted = true;
 		}
 		return isCompleted;

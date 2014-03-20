@@ -44,12 +44,11 @@ public static class PuzzlePieceFactory  {
 				// Resume Puzzle Piece
 				targetPiece.Resume();
 
-				// Puzzle emerges from the bottom
-				Vector3 targetPos 	= PuzzleCalculator.GetPiecePosition(puzzleParam,targetPiece.ID);
-				Vector3 initPos		= targetPos;
-				initPos.y 			-= puzzleParam.puzzleSpace;
-
-				targetPiece.Move(initPos,targetPos,puzzleParam.moveTime);
+				// Set Puzzle position 
+				Vector3 endPos 		= PuzzleCalculator.GetPiecePosition(puzzleParam,targetPiece.ID);
+				Vector3 startPos	= endPos;
+				endPos.z			= -50;
+				targetPiece.Move(startPos,endPos,puzzleParam.moveTime);
 
 				// Set the color to random.
 				int typeNo = Random.Range(0,puzzleColorList.Length);
